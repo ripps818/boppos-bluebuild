@@ -34,10 +34,12 @@ jobs:
 
       # the build is fully handled by the reusable github action
       - name: Inject Secure Boot Key
-        if: secrets.SECURE_BOOT_KEY != ''
         env:
           SECURE_BOOT_KEY: ${{ secrets.SECURE_BOOT_KEY }}
-        run: echo "$SECURE_BOOT_KEY" > files/private_key.priv
+        run: |
+          if [[ -n "$SECURE_BOOT_KEY" ]]; then
+            echo "$SECURE_BOOT_KEY" > files/private_key.priv
+          fi
 
       - name: Build Custom Image
         uses: blue-build/github-action@v1.10
