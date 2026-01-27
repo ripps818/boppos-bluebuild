@@ -36,9 +36,18 @@ jobs:
       - name: Inject Secure Boot Key
         env:
           SECURE_BOOT_KEY: ${{ secrets.SECURE_BOOT_KEY }}
+          SECURE_BOOT_CERT: ${{ secrets.SECURE_BOOT_CERT }}
         run: |
+          mkdir -p files
           if [[ -n "$SECURE_BOOT_KEY" ]]; then
-            echo "$SECURE_BOOT_KEY" > files/private_key.priv
+            echo "$SECURE_BOOT_KEY" | base64 -d > files/private_key.priv
+            echo "::notice::Secure Boot Key injected successfully."
+          else
+            echo "::warning::SECURE_BOOT_KEY is empty or undefined. Ephemeral keys will be used."
+          fi
+          if [[ -n "$SECURE_BOOT_CERT" ]]; then
+            echo "$SECURE_BOOT_CERT" | base64 -d > files/public_key.der
+            echo "::notice::Secure Boot Certificate injected successfully."
           fi
 
       - name: Build Custom Image

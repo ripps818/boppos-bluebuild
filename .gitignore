@@ -2,4 +2,6 @@ cosign.key
 cosign.private
 /Containerfile
 /.bluebuild-scripts_*
-files/system/etc/pki/akmods/private/private_key.priv
+private_key.priv
+public_key.der
+setup-secure-boot.sh

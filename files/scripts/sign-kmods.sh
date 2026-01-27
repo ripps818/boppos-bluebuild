@@ -16,12 +16,20 @@ rpm-ostree install akmods openssl sbsigntools
 if [ -f /tmp/files/private_key.priv ]; then
     echo "Found injected private key, moving to location..."
     mkdir -p /etc/pki/akmods/private
-    mv /tmp/files/private_key.priv /etc/pki/akmods/private/private_key.priv
+    cp /tmp/files/private_key.priv /etc/pki/akmods/private/private_key.priv
+    rm -f /tmp/files/private_key.priv
+fi
+if [ -f /tmp/files/public_key.der ]; then
+    echo "Found injected public key, moving to location..."
+    mkdir -p /etc/pki/akmods/certs
+    cp /tmp/files/public_key.der /etc/pki/akmods/certs/public_key.der
+    rm -f /tmp/files/public_key.der
 fi
 
 # Generate ephemeral signing keys if a persistent key was not provided
 if [ ! -f /etc/pki/akmods/private/private_key.priv ]; then
     echo "Generating ephemeral signing keys..."
+    rm -f /etc/pki/akmods/private/private_key.priv /etc/pki/akmods/certs/public_key.der
     /usr/sbin/kmodgenca -a
 fi
 
