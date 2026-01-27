@@ -29,17 +29,18 @@ jobs:
           # !! Add your recipes here
           - recipe.yml
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       # the build is fully handled by the reusable github action
       - name: Inject Secure Boot Key
+        if: secrets.SECURE_BOOT_KEY != ''
         env:
           SECURE_BOOT_KEY: ${{ secrets.SECURE_BOOT_KEY }}
-        run: |
-          if [[ -n "$SECURE_BOOT_KEY" ]]; then
-            echo "$SECURE_BOOT_KEY" > files/private_key.priv
-          fi
+        run: echo "$SECURE_BOOT_KEY" > files/private_key.priv
 
       - name: Build Custom Image
-        uses: blue-build/github-action@v1.11
+        uses: blue-build/github-action@v1.10
         with:
           recipe: ${{ matrix.recipe }}
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
