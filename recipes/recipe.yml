@@ -1,45 +1,169 @@
----
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
-# image will be published to ghcr.io/<user>/<name>
-name: template
-# description will be included in the image's metadata
-description: This is my personal OS image.
 
-# the base image to build on top of (FROM) and the version tag to use
-base-image: ghcr.io/ublue-os/silverblue-main
-image-version: 42 # latest is also supported if you want new updates ASAP
+name: boppos-bluebird
+description: "BoppOS based on Bazzite-dx, optimized for AMD Hardware"
+base-image: ghcr.io/ublue-os/bazzite-dx
+image-version: stable
 
-# module configuration, executed in order
-# you can include multiple instances of the same module
 modules:
   - type: files
     files:
       - source: system
-        destination: / # copies files/system/* (* means everything inside it) into your image's root folder /
+        destination: /
+
+  - type: fonts
+    fonts:
+      nerd-fonts:
+        - FiraCode
+        - Hack
+        - SourceCodePro
+        - Terminus
+        - JetBrainsMono
+        - NerdFontsSymbolsOnly
+      google-fonts:
+        - Alegreya
+        - Cabin
+        - Inter
+        - Lato
+        - Montserrat
+        - Mulish
+        - Open Sans
+        - Roboto
+        - Rubik
+
+  - type: script
+    scripts:
+      - kernel-prebuild.sh
 
   - type: dnf
     repos:
+      cleanup: true
       copr:
-        - atim/starship
-    install:
-      packages:
-        - micro
-        - starship
+        - ilyaz/LACT
+        - brycensranch/gpu-screen-recorder-git
+        - jackgreiner/lsfg-vk-git
+        - codifryed/CoolerControl
+        - hikariknight/looking-glass-kvmfr
+        - bieszczaders/kernel-cachyos
+        - bieszczaders/kernel-cachyos-addons
+      files: 
+        - helium-browser.repo
+        - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
+        - https://repository.mullvad.net/rpm/stable/mullvad.repo
+        - https://pkg.cloudflareclient.com/cloudflare-warp-ascii.repo
+      nonfree: rpmfusion
+
     remove:
+      auto-remove: true
       packages:
-        # example: removing firefox (in favor of the flatpak)
-        # "firefox" is the main package, "firefox-langpacks" is a dependency
-        - firefox
-        - firefox-langpacks # also remove firefox dependency (not required for all packages, this is a special case)
+        - hhd
+        - hhd-ui
+        - kernel
+        - kernel-core 
+        - kernel-modules 
+        - kernel-modules-core 
+        - kernel-modules-extra
+        - kernel-modules-akmods
+        - kernel-devel-matched
+
+    install:
+      skip-unavailable: true
+      allow-erasing: true
+      packages:
+        # CachyOS Kernel
+        - kernel-cachyos
+        - kernel-cachyos-core
+        - kernel-cachyos-modules
+        - kernel-cachyos-devel-matched
+        # CachyOS Addons
+        - ananicy-cpp
+        - cachyos-ananicy-rules
+        - cachyos-ksm-settings
+        - cachyos-settings
+        - scx-manager
+        - scx-scheds
+        - scx-tools
+        # Gaming
+        - antimicrox
+        - goverlay
+        - inputplumber
+        - lsfg-vk
+        - lsfg-vk-ui
+        # Hardware
+        - coolercontrol
+        - lact
+        - openrgb
+        - steam-devices
+        # Networking
+        - helium-browser
+        - mullvad-vpn
+        - cloudflare-warp
+        # Virtual Machine
+        - virt-manager
+        - podman-compose
+        - cargo
+        # Multimedia
+        - ffmpeg
+        - gpu-screen-recorder-ui
+        - gpu-screen-recorder-gtk 
+        - mpv
+        - yt-dlp
+        # CLI
+        - atuin
+        - bat
+        - byobu
+        - fd-find
+        - ripgrep
+        - tealdeer
+        - ugrep
+        - zoxide
+
+  - type: script
+    scripts:
+      - build-kmods.sh
+      - sign-kmods.sh
+      - kernel-postbuild.sh
 
   - type: default-flatpaks
     configurations:
-      - notify: true # Send notification after install/uninstall is finished (true/false)
+      - scope: user
+        repo:
+          title: Flathub (user)
+      - notify: true
         scope: system
-        # If no repo information is specified, Flathub will be used by default
-        install: # system flatpaks we want all users to have and not remove
+        repo:
+          title: Flathub (system)
+        install:
           - org.mozilla.firefox
-          - org.gnome.Loupe
-      - scope: user # Also add Flathub user repo, but no user packages
+          - net.mullvad.MullvadBrowser
+          - com.github.tchx84.Flatseal
+          - io.github.flattool.Warehouse
+          - io.missioncenter.MissionCenter
+          - com.heroicgameslauncher.hgl
+          - io.github.Faugus.faugus-launcher
+          - com.vysp3r.ProtonPlus
+          - org.freedesktop.Platform.VulkanLayer.gamescope
 
-  - type: signing # this sets up the proper policy & signing files for signed images to work fully
+  - type: systemd
+    system:
+      enabled:
+        - ananicy-cpp.service
+        - inputplumber.service
+        - ksmd.service
+        - lactd.service
+        - libvirtd.service
+        - openrgb.service
+        - scx_loader.service
+      disabled:
+        - coolercontrold.service
+        - mullvad-daemon.service
+        - tailscaled.service
+        - warp-svc.service
+
+  - type: kargs
+    arch: x86_64
+    kargs:
+      - amd_iommu=on
+      - amdgpu.ppfeaturemask=0xffffffff
+      - iommu=pt
+      - kvmfr.static_size_mb=128

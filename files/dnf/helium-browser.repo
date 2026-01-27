@@ -1,0 +1,5 @@
+[helium]
+name=Helium Browser Repository
+baseurl=https://arvaidasre.github.io/helium-browser-deb/rpm/x86_64
+gpgcheck=0
+metadata_expire=1h

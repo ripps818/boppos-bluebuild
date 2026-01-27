@@ -1,0 +1,13 @@
+[Unit]
+Description=Enable SELinux policy for CachyOS Kernel Modules
+
+After=local-fs.target
+ConditionPathExists=/usr/sbin/setsebool
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c "/usr/sbin/getsebool domain_kernel_load_modules | grep -q 'on' || /usr/sbin/setsebool -P domain_kernel_load_modules on"
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

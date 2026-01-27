@@ -30,6 +30,11 @@ jobs:
           - recipe.yml
     steps:
       # the build is fully handled by the reusable github action
+      - name: Inject Secure Boot Key
+        run: |
+          echo "${{ secrets.SECURE_BOOT_KEY }}" > files/private_key.priv
+        if: ${{ secrets.SECURE_BOOT_KEY != '' }}
+
       - name: Build Custom Image
         uses: blue-build/github-action@v1.10
         with:

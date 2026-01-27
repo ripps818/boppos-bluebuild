@@ -1,0 +1,1 @@
+SUBSYSTEM=="input", ATTRS{idVendor}=="3434", ATTRS{idProduct}=="0913", ENV{ID_INPUT_JOYSTICK}=""
