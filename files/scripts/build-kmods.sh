@@ -10,10 +10,6 @@ rpm -Uvh --replacefiles --nodeps /tmp/sbctl-pkg/*.rpm
 rm -rf /tmp/sbctl-pkg
 
 # --- Setup Variables ---
-# Matches your consistent local/remote path
-PRIVATE_KEY="/usr/share/secureboot/boppos.priv"
-PUBLIC_KEY="/usr/share/secureboot/boppos.pem"
-
 KERNEL_VERSION=$(rpm -qa kernel-cachyos --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}\n' | sort -V | tail -n 1)
 KERNEL_DIR="/usr/src/kernels/${KERNEL_VERSION}"
 INSTALL_MOD_DIR="/usr/lib/modules/${KERNEL_VERSION}/extra"
@@ -35,13 +31,13 @@ dnf5 install -y --allowerasing \
 echo "--- Preparing to build for Kernel: ${KERNEL_VERSION} ---"
 
 # --- Download Sources ---
-# We download the akmod packages but do NOT extract them to rpmbuild yet
+# Download but DO NOT extract yet
 dnf5 download -y --destdir="$AKMOD_DL_DIR" --resolve \
     --arch x86_64 --arch noarch \
     akmod-xone akmod-xpad-noone akmod-kvmfr \
     xone xone-firmware kvmfr
 
-# Install the source RPMs to /usr/src/akmods
+# Install source RPMs to /usr/src/akmods (Repo storage)
 rpm -Uvh --force --nopost "$AKMOD_DL_DIR"/*.rpm
 
 # --- Build Function ---
@@ -50,7 +46,7 @@ build_akmod() {
     local BUILD_SUBDIR="${2:-}"
     echo "--- Building ${MODULE_NAME} ---"
 
-    # Extract ONLY the current module's source (Critical Fix)
+    # [FIX] Extract ONLY the current module's source inside the loop
     local SRC_RPM=$(find /usr/src/akmods -name "*${MODULE_NAME}*.src.rpm" | head -n 1)
     if [[ -z "$SRC_RPM" ]]; then
         echo "ERROR: Could not find src.rpm for ${MODULE_NAME}"

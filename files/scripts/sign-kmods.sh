@@ -14,8 +14,8 @@ TARGET_KERNEL="/usr/lib/modules/${KERNEL_VERSION}/vmlinuz"
 PRIVATE_KEY="/usr/share/boppos/keys/boppos.priv"
 PUBLIC_KEY="/usr/share/boppos/keys/boppos.pem"
 
-# Trap to ensure key deletion on ANY exit (success or failure)
-trap 'rm -f "$PRIVATE_KEY"; echo "⚠️ Secure Boot key wiped from image."' EXIT
+# Trap to ensure private key is wiped from the final image
+trap 'rm -f "$PRIVATE_KEY"; echo "⚠️ Private key wiped from image."' EXIT
 
 # Validation: Ensure the signing tool exists
 if [ ! -f "$SIGN_TOOL" ]; then
