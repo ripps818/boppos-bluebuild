@@ -52,3 +52,4 @@ jobs:
 
           # enabled by default, disable if your image is small and you want faster builds
           maximize_build_space: true
+          skip_checkout: true
