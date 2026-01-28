@@ -43,7 +43,7 @@ jobs:
           wc -c files/system/usr/share/boppos/keys/boppos.pem
 
       - name: Build Custom Image
-        uses: blue-build/github-action@v1.10
+        uses: blue-build/github-action@v1.11
         with:
           recipe: ${{ matrix.recipe }}
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
