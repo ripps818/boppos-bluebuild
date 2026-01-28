@@ -6,54 +6,37 @@ KERNEL_VERSION=$(rpm -qa kernel-cachyos --queryformat '%{VERSION}-%{RELEASE}.%{A
 KERNEL_DIR="/usr/src/kernels/${KERNEL_VERSION}"
 INSTALL_MOD_DIR="/usr/lib/modules/${KERNEL_VERSION}/extra"
 
-# Ensure private key is removed on exit to prevent leakage
-trap 'rm -f /etc/pki/akmods/private/private_key.priv' EXIT
+PRIVATE_KEY="/tmp/files/certs/private_key.priv"
+PUBLIC_KEY="/tmp/files/certs/public_key.pem"
 
-# Install signing tools
-rpm-ostree install akmods openssl sbsigntools
+if [[ -f "$PRIVATE_KEY" ]] && [[ -f "$PUBLIC_KEY" ]]; then
+    echo "Importing keys into sbctl database..."
+    # This moves the keys into /etc/sbctl/keys (or /usr/share/secureboot), baking them into the image
+    sbctl import-keys --force --db-key "$PRIVATE_KEY" --db-cert "$PUBLIC_KEY"
 
-# Check if key was injected via build process (e.g. GitHub Secret)
-if [ -f /tmp/files/private_key.priv ]; then
-    echo "Found injected private key, moving to location..."
-    mkdir -p /etc/pki/akmods/private
-    cp /tmp/files/private_key.priv /etc/pki/akmods/private/private_key.priv
-    rm -f /tmp/files/private_key.priv
+    # Copy keys to /etc/sbctl to ensure persistence in OSTree images
+    mkdir -p /etc/sbctl
+    cp -r /var/lib/sbctl/* /etc/sbctl/ 2>/dev/null || true
+
+    echo "Signing kernel image with sbsign..."
+    # Sign the vmlinuz binary
+    sbsign --key "$PRIVATE_KEY" --cert "$PUBLIC_KEY" --output "/usr/lib/modules/${KERNEL_VERSION}/vmlinuz" "/usr/lib/modules/${KERNEL_VERSION}/vmlinuz"
+
+    echo "Signing kernel modules in ${INSTALL_MOD_DIR}..."
+    # sbctl doesn't sign .ko files, so we use the kernel's sign-file tool
+    # We use the keys we just imported (or the temp ones, they are the same)
+    find "${INSTALL_MOD_DIR}" -type f -name "*.ko" -exec "${KERNEL_DIR}/scripts/sign-file" \
+        sha256 "$PRIVATE_KEY" "$PUBLIC_KEY" {} \;
+
+    # Cleanup the injected secrets from /tmp/files so they don't persist in that specific location
+    # (Note: They ARE persisted in /etc/sbctl/keys now, which is intentional for this approach)
+    rm -f "$PRIVATE_KEY" "$PUBLIC_KEY"
+else
+    echo "WARNING: Secure Boot keys not found in /tmp/files/certs."
+    echo "Skipping signing. If this is a local build, this is expected."
 fi
-if [ -f /tmp/files/public_key.der ]; then
-    echo "Found injected public key, moving to location..."
-    mkdir -p /etc/pki/akmods/certs
-    cp /tmp/files/public_key.der /etc/pki/akmods/certs/public_key.der
-    rm -f /tmp/files/public_key.der
-fi
 
-# Generate ephemeral signing keys if a persistent key was not provided
-if [ ! -f /etc/pki/akmods/private/private_key.priv ]; then
-    echo "Generating ephemeral signing keys..."
-    rm -f /etc/pki/akmods/private/private_key.priv /etc/pki/akmods/certs/public_key.der
-    /usr/sbin/kmodgenca -a
-fi
-
-echo "Signing modules in ${INSTALL_MOD_DIR}..."
-find "${INSTALL_MOD_DIR}" -type f -name "*.ko" -exec "${KERNEL_DIR}/scripts/sign-file" \
-    sha256 /etc/pki/akmods/private/private_key.priv /etc/pki/akmods/certs/public_key.der {} \;
-
-# Sign the kernel image (vmlinuz) for Secure Boot
-echo "Signing kernel image..."
-# sbsign requires PEM format certificate
-openssl x509 -in /etc/pki/akmods/certs/public_key.der -inform DER -out /etc/pki/akmods/certs/public_key.pem
-sbsign --key /etc/pki/akmods/private/private_key.priv --cert /etc/pki/akmods/certs/public_key.pem \
-    --output "/usr/lib/modules/${KERNEL_VERSION}/vmlinuz" "/usr/lib/modules/${KERNEL_VERSION}/vmlinuz"
-
-# Copy public key for enrollment (ujust enroll-secure-boot-key)
-if [ -f /etc/pki/akmods/certs/akmods-ublue.der ]; then
-    mv /etc/pki/akmods/certs/akmods-ublue.der /etc/pki/akmods/certs/akmods-ublue.der.bak
-fi
-cp /etc/pki/akmods/certs/public_key.der /etc/pki/akmods/certs/akmods-ublue.der
-
-# Cleanup signing tools
-rpm-ostree uninstall akmods sbsigntools
-
-# Remove the akmods user
+# Remove the akmods user if it exists (cleanup)
 if id "akmods" &>/dev/null; then
     userdel -r akmods || true
 fi

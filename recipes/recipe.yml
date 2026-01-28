@@ -46,6 +46,7 @@ modules:
         - hikariknight/looking-glass-kvmfr
         - bieszczaders/kernel-cachyos
         - bieszczaders/kernel-cachyos-addons
+        - chenxiaolong/sbctl
       files: 
         - helium-browser.repo
         - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
@@ -80,6 +81,7 @@ modules:
         - cachyos-ananicy-rules
         - cachyos-ksm-settings
         - cachyos-settings
+        - sbsigntools
         - scx-manager
         - scx-scheds
         - scx-tools

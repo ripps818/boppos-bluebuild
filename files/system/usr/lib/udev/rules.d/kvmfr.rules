@@ -1,1 +1,1 @@
-KERNEL=="kvmfr0", OWNER="root", GROUP="kvm", MODE="0660"
+SUBSYSTEM=="kvmfr", OWNER="root", GROUP="kvm", MODE="0660"

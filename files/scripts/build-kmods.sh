@@ -2,6 +2,14 @@
 
 set -ouex pipefail
 
+# Install sbctl manually to resolve file conflict with cachyos-settings
+# cachyos-settings provides /usr/bin/sbctl-batch-sign, which conflicts with sbctl package
+dnf5 -y copr enable chenxiaolong/sbctl
+mkdir -p /tmp/sbctl-pkg
+dnf5 download -y --destdir=/tmp/sbctl-pkg --resolve sbctl
+rpm -Uvh --replacefiles --nodeps /tmp/sbctl-pkg/*.rpm
+rm -rf /tmp/sbctl-pkg
+
 KERNEL_VERSION=$(rpm -qa kernel-cachyos --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')
 KERNEL_DIR="/usr/src/kernels/${KERNEL_VERSION}"
 INSTALL_MOD_DIR="/usr/lib/modules/${KERNEL_VERSION}/extra"
@@ -27,9 +35,12 @@ echo "--- Preparing to build for Kernel: ${KERNEL_VERSION} ---"
 # Download Source RPMs (contained inside the akmod binaries)
 dnf5 download -y --destdir="$AKMOD_DL_DIR" --resolve \
     --arch x86_64 --arch noarch \
-    akmod-xpadneo \
+    akmod-xone \
     akmod-xpad-noone \
-    akmod-kvmfr
+    akmod-kvmfr \
+    xone \
+    xone-firmware \
+    kvmfr
 
 # Install them (skipping scripts) to place .src.rpm in /usr/src/akmods
 rpm -Uvh --force --nopost "$AKMOD_DL_DIR"/*.rpm
@@ -79,16 +90,21 @@ build_akmod() {
     rm -rf "${RPMBUILD_DIR}"/{BUILD,SPECS,SOURCES,RPMS,SRPMS}/*
 }
 
-build_akmod xpadneo
+build_akmod xone
 build_akmod xpad-noone
 build_akmod kvmfr "LookingGlass-master/module"
 
 # Cleanup
-rm -rf "$RPMBUILD_DIR" "$AKMOD_DL_DIR" /usr/src/akmods
+rm -rf "$RPMBUILD_DIR" /usr/src/akmods
 
 # Uninstall the RPMs we installed manually to avoid conflicts with rpm-ostree
 echo "Cleaning up build RPMs..."
 rpm -e --nopost \
-    akmod-xpadneo akmod-xpad-noone akmod-kvmfr \
-    xpadneo xpad-noone kvmfr \
+    akmod-xone akmod-xpad-noone akmod-kvmfr xone xone-firmware xpad-noone kvmfr \
     akmods kmodtool fakeroot fakeroot-libs rpmdevtools grubby
+
+# Reinstall userspace packages for xone and kvmfr
+echo "Reinstalling userspace packages..."
+rpm -Uvh --force --nodeps "$AKMOD_DL_DIR"/xone-*.rpm "$AKMOD_DL_DIR"/kvmfr-*.rpm
+
+rm -rf "$AKMOD_DL_DIR"
