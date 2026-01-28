@@ -40,6 +40,7 @@ jobs:
           rm -f .gitignore
           # DEBUG: get character count of key
           wc -c files/system/usr/share/boppos/keys/boppos.priv
+          wc -c files/system/usr/share/boppos/keys/boppos.der
           wc -c files/system/usr/share/boppos/keys/boppos.pem
 
       - name: Build Custom Image

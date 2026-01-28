@@ -126,6 +126,7 @@ modules:
       - build-kmods.sh
       - sign-kmods.sh
       - kernel-postbuild.sh
+      - setup-mok-just.sh
 
   - type: default-flatpaks
     configurations:

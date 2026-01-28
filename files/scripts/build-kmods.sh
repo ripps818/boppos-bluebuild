@@ -2,13 +2,6 @@
 
 set -ouex pipefail
 
-# --- Fix sbctl Conflict ---
-dnf5 -y copr enable chenxiaolong/sbctl
-mkdir -p /tmp/sbctl-pkg
-dnf5 download -y --destdir=/tmp/sbctl-pkg --resolve sbctl
-rpm -Uvh --replacefiles --nodeps /tmp/sbctl-pkg/*.rpm
-rm -rf /tmp/sbctl-pkg
-
 # --- Setup Variables ---
 KERNEL_VERSION=$(rpm -qa kernel-cachyos --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}\n' | sort -V | tail -n 1)
 KERNEL_DIR="/usr/src/kernels/${KERNEL_VERSION}"

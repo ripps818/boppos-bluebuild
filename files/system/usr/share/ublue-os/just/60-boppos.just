@@ -1,16 +1,14 @@
-
-# Initialize BoppOS Secure Boot (Run once)
-setup-secureboot:
-    @echo "Setting up BoppOS keys..."
-    @echo "Step 1: Generating local keys..."
-    sudo sbctl create-keys
-    
-    @echo "Step 2: Importing BoppOS signing certificate..."
-    # Ensure this directory exists before copying
-    sudo mkdir -p /var/lib/sbctl/keys/db
-    sudo cp /usr/share/boppos/keys/boppos.pem /var/lib/sbctl/keys/db/boppos.pem
-    
-    @echo "Step 3: Enrolling keys (including Microsoft compatibility)..."
-    sudo sbctl enroll-keys --microsoft
-    
-    @echo "Success! Secure Boot is configured. Please reboot."
+# Boot into MOK Manager to enroll the BoppOS key
+enroll-secure-boot-keys:
+    @echo "🔐 Enrolling BoppOS Key into MOK (Shim)..."
+    @if [ ! -f "/usr/share/boppos/keys/boppos.der" ]; then \
+        echo "❌ Error: /usr/share/boppos/keys/boppos.der not found!"; \
+        exit 1; \
+    fi
+    @echo "1. You will be asked for a ONE-TIME password."
+    @echo "2. Remember it. You will need it after reboot."
+    @echo "3. On the blue 'MOK Management' screen: Select 'Enroll MOK' -> 'Continue' -> 'Yes'."
+    @echo ""
+    sudo mokutil --import /usr/share/boppos/keys/boppos.der
+    @echo ""
+    @echo "✅ Setup complete. Please REBOOT now to finish enrollment.

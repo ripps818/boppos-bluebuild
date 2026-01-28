@@ -4,4 +4,3 @@ cosign.private
 /.bluebuild-scripts_*
 /.oldscripts
 files/system/usr/share/boppos/keys/boppos.priv
-files/system/usr/share/boppos/keys/boppos.der
