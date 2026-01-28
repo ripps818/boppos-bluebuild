@@ -1,4 +1,4 @@
-# Bopp OS Bluebird
+# Bopp OS Bluebuild
 Custom build of Bazzite-dx that also uses the CachyOS kernel, optimized for AMD gaming. Added some custom scripts to add kernel modules not included and secure boot signing.
 
 ## Installation
