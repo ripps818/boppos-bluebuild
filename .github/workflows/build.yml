@@ -39,6 +39,7 @@ jobs:
           echo "${{ secrets.SECURE_BOOT_KEY }}" > files/certs/private_key.priv
           # DEBUG: get character count of key
           wc -c files/certs/private_key.priv
+          wc -c files/certs/public_key.pem
 
       - name: Build Custom Image
         uses: blue-build/github-action@v1.10

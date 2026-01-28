@@ -6,8 +6,8 @@ KERNEL_VERSION=$(rpm -qa kernel-cachyos --queryformat '%{VERSION}-%{RELEASE}.%{A
 KERNEL_DIR="/usr/src/kernels/${KERNEL_VERSION}"
 INSTALL_MOD_DIR="/usr/lib/modules/${KERNEL_VERSION}/extra"
 
-PRIVATE_KEY="/tmp/files/certs/private_key.priv"
-PUBLIC_KEY="/tmp/files/certs/public_key.pem"
+PRIVATE_KEY="/etc/pki/akmods/certs/private_key.priv"
+PUBLIC_KEY="/etc/pki/akmods/certs/public_key.pem"
 
 if [[ -f "$PRIVATE_KEY" ]] && [[ -f "$PUBLIC_KEY" ]]; then
     echo "Importing keys into sbctl database..."
@@ -32,14 +32,14 @@ if [[ -f "$PRIVATE_KEY" ]] && [[ -f "$PUBLIC_KEY" ]]; then
     find "${INSTALL_MOD_DIR}" -type f -name "*.ko" -exec "${KERNEL_DIR}/scripts/sign-file" \
         sha256 "$PRIVATE_KEY" "$PUBLIC_KEY" {} \;
 
-    # Cleanup the injected secrets from /tmp/files so they don't persist in that specific location
+    # Cleanup the injected secrets so they don't persist in that specific location
     # (Note: They ARE persisted in /etc/sbctl/keys now, which is intentional for this approach)
     rm -f "$PRIVATE_KEY" "$PUBLIC_KEY"
 
     # Remove /var/lib/sbctl so tmpfiles.d can populate it on boot
     rm -rf /var/lib/sbctl
 else
-    echo "WARNING: Secure Boot keys not found in /tmp/files/certs."
+    echo "WARNING: Secure Boot keys not found in /etc/pki/akmods/certs."
     echo "Skipping signing. If this is a local build, this is expected."
 fi
 

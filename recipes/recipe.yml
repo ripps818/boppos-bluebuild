@@ -10,6 +10,11 @@ modules:
     files:
       - source: system
         destination: /
+  
+  - type: files
+    files:
+      - source: certs 
+        destination: /etc/pki/akmods/certs
 
   - type: fonts
     fonts:
