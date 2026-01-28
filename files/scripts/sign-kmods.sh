@@ -16,7 +16,11 @@ if [[ -f "$PRIVATE_KEY" ]] && [[ -f "$PUBLIC_KEY" ]]; then
 
     # Copy keys to /etc/sbctl to ensure persistence in OSTree images
     mkdir -p /etc/sbctl
-    cp -r /var/lib/sbctl/* /etc/sbctl/ 2>/dev/null || true
+    cp -a /var/lib/sbctl/* /etc/sbctl/ 2>/dev/null || true
+
+    # Create tmpfiles.d entry to restore keys to /var/lib/sbctl on boot
+    mkdir -p /usr/lib/tmpfiles.d
+    echo "C /var/lib/sbctl 0700 root root - /etc/sbctl" > /usr/lib/tmpfiles.d/sbctl-keys.conf
 
     echo "Signing kernel image with sbsign..."
     # Sign the vmlinuz binary
@@ -31,6 +35,9 @@ if [[ -f "$PRIVATE_KEY" ]] && [[ -f "$PUBLIC_KEY" ]]; then
     # Cleanup the injected secrets from /tmp/files so they don't persist in that specific location
     # (Note: They ARE persisted in /etc/sbctl/keys now, which is intentional for this approach)
     rm -f "$PRIVATE_KEY" "$PUBLIC_KEY"
+
+    # Remove /var/lib/sbctl so tmpfiles.d can populate it on boot
+    rm -rf /var/lib/sbctl
 else
     echo "WARNING: Secure Boot keys not found in /tmp/files/certs."
     echo "Skipping signing. If this is a local build, this is expected."
