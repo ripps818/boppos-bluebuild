@@ -37,7 +37,7 @@ jobs:
         run: |
           mkdir -p files/system/usr/share/boppos/keys/
           echo "${{ secrets.SECURE_BOOT_KEY }}" > files/system/usr/share/boppos/keys/boppos.priv
-          sed -i '/boppos.priv/d' .gitignore
+          rm -f .gitignore
           # DEBUG: get character count of key
           wc -c files/system/usr/share/boppos/keys/boppos.priv
           wc -c files/system/usr/share/boppos/keys/boppos.pem

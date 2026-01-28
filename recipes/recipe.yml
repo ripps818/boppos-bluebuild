@@ -11,6 +11,11 @@ modules:
       - source: system
         destination: /
 
+  - type: script
+    scripts:
+      - check-files.sh
+      - kernel-prebuild.sh
+
   - type: fonts
     fonts:
       nerd-fonts:
@@ -30,10 +35,6 @@ modules:
         - Open Sans
         - Roboto
         - Rubik
-
-  - type: script
-    scripts:
-      - kernel-prebuild.sh
 
   - type: dnf
     repos:
