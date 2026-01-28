@@ -35,11 +35,11 @@ jobs:
       - name: Retrieve Signing Key
         shell: bash
         run: |
-          mkdir -p files/certs
-          echo "${{ secrets.SECURE_BOOT_KEY }}" > files/certs/private_key.priv
+          mkdir -p files/system/usr/share/boppos/keys/
+          echo "${{ secrets.SECURE_BOOT_KEY }}" > files/system/usr/share/boppos/keys/boppos.priv
           # DEBUG: get character count of key
-          wc -c files/certs/private_key.priv
-          wc -c files/certs/public_key.pem
+          wc -c files/system/usr/share/boppos/keys/boppos.priv
+          wc -c files/system/usr/share/boppos/keys/boppos.pem
 
       - name: Build Custom Image
         uses: blue-build/github-action@v1.10

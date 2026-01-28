@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 
-name: boppos-bluebird
+name: boppos-bluebuild
 description: "BoppOS based on Bazzite-dx, optimized for AMD Hardware"
 base-image: ghcr.io/ublue-os/bazzite-dx
 image-version: stable
@@ -10,11 +10,6 @@ modules:
     files:
       - source: system
         destination: /
-  
-  - type: files
-    files:
-      - source: certs 
-        destination: /etc/pki/akmods/certs
 
   - type: fonts
     fonts:

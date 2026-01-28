@@ -3,5 +3,5 @@ cosign.private
 /Containerfile
 /.bluebuild-scripts_*
 /.oldscripts
-files/certs/private_key.priv
-files/certs/public_key.der
+files/system/usr/share/boppos/keys/boppos.priv
+files/system/usr/share/boppos/keys/boppos.der
