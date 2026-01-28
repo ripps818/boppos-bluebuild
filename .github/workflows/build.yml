@@ -30,7 +30,7 @@ jobs:
           - recipe.yml
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Retrieve Signing Key
         shell: bash
