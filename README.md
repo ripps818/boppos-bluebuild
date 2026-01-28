@@ -1,5 +1,13 @@
 # Bopp OS Bluebuild
-Custom build of Bazzite-dx that also uses the CachyOS kernel, optimized for AMD gaming. Added some custom scripts to add kernel modules not included and secure boot signing.
+Custom image of Bazzite-dx that also uses the CachyOS kernel created using blue-build. It carries over several CachyOS options and services and is generally optimized for AMD gaming. Also added some custom scripts to add kernel modules, such as xone and xpad-noone.
+
+I've written a custom secureboot signing system so that Secure Boot will work with the CachyOS kernel and any custom kernel modules added.
+- First set UEFI/BIOS into Secureboot Setup Mode.
+- Use the custom ujust command to have sbctl install the keys.
+```
+ujust setup-secureboot
+```
+- Reboot and reenable Secureboot
 
 ## Installation
 
