@@ -36,9 +36,14 @@ jobs:
       - name: Retrieve Signing Key
         shell: bash
         run: |
+          # Create the key file
           echo "${{ secrets.SECURE_BOOT_KEY }}" > boppos.priv
-          # Only remove gitignore if strictly necessary for the build to see ignored files
-          rm -f .gitignore 
+          
+          # 🛑 CRITICAL FIX: Tell Docker NOT to ignore this file
+          echo "!boppos.priv" >> .dockerignore
+          
+          # (Optional) Verify it exists for the runner (Debug)
+          ls -l boppos.priv
           
       - name: Build Custom Image
         uses: blue-build/github-action@v1.11
