@@ -1,1 +1,1 @@
-SUBSYSTEM=="kvmfr", OWNER="root", GROUP="kvm", MODE="0660"
+SUBSYSTEM=="kvmfr", OWNER="root", GROUP="kvm", MODE="0660", SECLABEL{selinux}="system_u:object_r:vfio_device_t:s0"

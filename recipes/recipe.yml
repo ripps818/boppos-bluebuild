@@ -1,15 +1,19 @@
-# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
-
 name: boppos-bluebuild
 description: "BoppOS based on Bazzite-dx, optimized for AMD Hardware"
 base-image: ghcr.io/ublue-os/bazzite-dx
 image-version: stable
+# base-image: ghcr.io/ripps818/boppos-bluebuild
+# image-version: latest
 
 modules:
   - type: files
     files:
       - source: system
         destination: /
+
+  - type: copy
+    src: boppos.priv
+    dest: /usr/share/boppos/keys/boppos.priv
 
   - type: script
     scripts:
@@ -47,7 +51,6 @@ modules:
         - hikariknight/looking-glass-kvmfr
         - bieszczaders/kernel-cachyos
         - bieszczaders/kernel-cachyos-addons
-        - chenxiaolong/sbctl
       files: 
         - helium-browser.repo
         - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
@@ -121,12 +124,62 @@ modules:
         - ugrep
         - zoxide
 
+  - type: build-kmods
+    source: local
+    repos:
+      copr:
+        - hikariknight/looking-glass-kvmfr
+      files:
+        - terra-source.repo
+      nonfree: rpmfusion
+    kernel:
+      package: kernel-cachyos
+      devel: kernel-cachyos-devel-matched
+    cleanup:
+      packages:
+        - rpmfusion-free-release
+        - rpmfusion-nonfree-release
+      files:
+        - /etc/yum.repos.d/terra-source.repo
+        - /etc/yum.repos.d/_copr*hikariknight-looking-glass-kvmfr.repo
+    build_deps:
+      - python3-setuptools
+    modules:
+      - name: openrazer
+        source:
+          type: git
+          url: https://github.com/openrazer/openrazer.git
+        script: build-openrazer.sh
+      - name: xone
+        source:
+          package: akmod-xone
+        extras:
+          - xone
+          - xone-firmware
+      - name: xpad-noone
+        source:
+          package: akmod-xpad-noone
+        extras:
+          - xpad-noone
+      - name: kvmfr
+        source:
+          package: akmod-kvmfr
+        builddir: "LookingGlass-master/module"
+        extras:
+          - kvmfr
+
+  - type: justfiles
+    validate: true
+    install: true
+    include:
+      - 60-boppos.just
+
   - type: script
     scripts:
-      - build-kmods.sh
+      - fix-just-collision.sh
+      - install-joystick-blacklist.sh
       - sign-kmods.sh
       - kernel-postbuild.sh
-      - setup-mok-just.sh
 
   - type: default-flatpaks
     configurations:

@@ -4,11 +4,11 @@ on:
     - cron:
         "00 06 * * *" # build at 06:00 UTC every day
         # (20 minutes after last ublue images start building)
-  push:
-    paths-ignore: # don't rebuild if only documentation has changed
-      - "**.md"
-
-  pull_request:
+  # push:
+  #   paths-ignore: # don't rebuild if only documentation has changed
+  #     - "**.md"
+  #
+  # pull_request:
   workflow_dispatch: # allow manually triggering builds
 concurrency:
   # only run one build at a time
@@ -35,13 +35,7 @@ jobs:
       - name: Retrieve Signing Key
         shell: bash
         run: |
-          mkdir -p files/system/usr/share/boppos/keys/
-          echo "${{ secrets.SECURE_BOOT_KEY }}" > files/system/usr/share/boppos/keys/boppos.priv
-          rm -f .gitignore
-          # DEBUG: get character count of key
-          wc -c files/system/usr/share/boppos/keys/boppos.priv
-          wc -c files/system/usr/share/boppos/keys/boppos.der
-          wc -c files/system/usr/share/boppos/keys/boppos.pem
+          echo "${{ secrets.SECURE_BOOT_KEY }}" > boppos.priv
 
       - name: Build Custom Image
         uses: blue-build/github-action@v1.11
@@ -53,4 +47,11 @@ jobs:
 
           # enabled by default, disable if your image is small and you want faster builds
           maximize_build_space: true
-          skip_checkout: true
+
+      - name: Push Experimental Image
+        shell: bash
+        run: |
+          OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          podman login ghcr.io -u ${{ github.actor }} -p ${{ github.token }}
+          podman tag localhost/boppos-bluebuild:latest ghcr.io/$OWNER_LC/boppos-bluebuild:experimental
+          podman push ghcr.io/$OWNER_LC/boppos-bluebuild:experimental
