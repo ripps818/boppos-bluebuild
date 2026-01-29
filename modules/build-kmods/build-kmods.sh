@@ -34,7 +34,17 @@ get_kernel_version() {
 setup_repos() {
     echo "--- Setting up Repositories ---"
     
-    # Handle COPR repositories
+    # 1. Import GPG Keys (New Feature)
+    if echo "$CONFIG" | jq -e '.repos.gpg_keys' >/dev/null; then
+        local keys
+        mapfile -t keys < <(echo "$CONFIG" | jq -r '.repos.gpg_keys[]')
+        for key in "${keys[@]}"; do
+            echo "Importing GPG Key: $key"
+            rpm --import "$key"
+        done
+    fi
+
+    # 2. Handle COPR repositories
     if echo "$CONFIG" | jq -e '.repos.copr' >/dev/null; then
         local coprs
         mapfile -t coprs < <(echo "$CONFIG" | jq -r '.repos.copr[]')
@@ -44,38 +54,45 @@ setup_repos() {
         done
     fi
 
-    # Handle repo files
+    # 3. Handle repo files with Variable Substitution (Enhanced)
     if echo "$CONFIG" | jq -e '.repos.files' >/dev/null; then
         local files
         mapfile -t files < <(echo "$CONFIG" | jq -r '.repos.files[]')
+        
+        # Get Fedora version for substitutions (e.g. %fedora -> 39)
+        local fedora_ver
+        fedora_ver=$(rpm -E %fedora)
+
         for file in "${files[@]}"; do
-            if [[ "$file" =~ ^https?:// ]]; then
-                echo "Downloading repo: $file"
+            # Substitute %fedora or %OS_VERSION% in the string
+            local clean_file="${file//%fedora/$fedora_ver}"
+            clean_file="${clean_file//%OS_VERSION%/$fedora_ver}"
+
+            if [[ "$clean_file" =~ ^https?:// ]]; then
+                echo "Downloading repo: $clean_file"
                 local filename
-                filename=$(basename "$file")
-                curl -fsSL "$file" -o "/etc/yum.repos.d/$filename"
-            elif [[ "$file" == /* ]]; then
-                if [[ -f "$file" ]]; then
-                    echo "Installing repo file: $file"
-                    cp "$file" "/etc/yum.repos.d/"
-                else
-                    echo "WARNING: Repo file '$file' not found"
-                fi
+                filename=$(basename "$clean_file")
+                curl -fsSL "$clean_file" -o "/etc/yum.repos.d/$filename"
             else
-                # Look in /tmp/files/build-kmods/
-                local src_file="/tmp/files/build-kmods/$file"
-                
-                if [[ -f "$src_file" ]]; then
-                    echo "Installing repo file: $file"
-                    cp "$src_file" "/etc/yum.repos.d/"
+                # Look in explicit path or local module path
+                local src_path=""
+                if [[ -f "$clean_file" ]]; then
+                    src_path="$clean_file"
+                elif [[ -f "/tmp/files/build-kmods/$clean_file" ]]; then
+                    src_path="/tmp/files/build-kmods/$clean_file"
+                fi
+
+                if [[ -n "$src_path" ]]; then
+                    echo "Installing repo file: $src_path"
+                    cp "$src_path" "/etc/yum.repos.d/"
                 else
-                    echo "WARNING: Repo file '$file' not found in /tmp/files/build-kmods/"
+                    echo "WARNING: Repo file '$clean_file' not found"
                 fi
             fi
         done
     fi
     
-    # Handle RPMFusion shortcut
+    # 4. Handle RPMFusion shortcut
     if echo "$CONFIG" | jq -e '.repos.nonfree' >/dev/null; then
         local nonfree
         nonfree=$(echo "$CONFIG" | jq -r '.repos.nonfree')
@@ -112,23 +129,18 @@ install_deps() {
     # Only install devel packages if no source directory is specified
     if [[ ${#kernel_src_list[@]} -eq 0 ]]; then
         local devel_pkgs=()
-        
-        # Try new list format
         if echo "$CONFIG" | jq -e '.kernel.devel.package' >/dev/null; then
             mapfile -t devel_pkgs < <(echo "$CONFIG" | jq -r '.kernel.devel.package[]')
-        # Try old string format
         elif echo "$CONFIG" | jq -e '.kernel.devel' >/dev/null; then
              local d
              d=$(echo "$CONFIG" | jq -r '.kernel.devel')
              if [[ -n "$d" ]]; then devel_pkgs+=("$d"); fi
         fi
 
-        # Default if empty
         if [[ ${#devel_pkgs[@]} -eq 0 ]]; then
             devel_pkgs+=("${kpkg}-devel")
         fi
 
-        # Append version and add to build_deps
         for pkg in "${devel_pkgs[@]}"; do
             required_deps+=("${pkg}-${kver}")
         done
@@ -140,17 +152,38 @@ install_deps() {
         required_deps+=("${extra_deps[@]}")
     fi
 
-    # Filter: Only install/track packages that are NOT currently installed
+    # Categorize Dependencies (New Feature)
     local pkgs_to_install=()
+    local groups_to_install=()
+    local urls_to_install=()
+
     for pkg in "${required_deps[@]}"; do
-        if ! rpm -q "$pkg" &>/dev/null; then
+        if [[ "$pkg" == @* ]]; then
+            groups_to_install+=("${pkg:1}") # Remove '@'
+        elif [[ "$pkg" =~ ^https?:// ]]; then
+            urls_to_install+=("$pkg")
+        elif ! rpm -q "$pkg" &>/dev/null; then
             pkgs_to_install+=("$pkg")
         else
-            echo "Package '$pkg' is already installed. Skipping removal later."
+            echo "Package '$pkg' is already installed."
         fi
     done
 
-    # Install deps
+    # Install Groups
+    if [[ ${#groups_to_install[@]} -gt 0 ]]; then
+        echo "Installing Groups: ${groups_to_install[*]}"
+        dnf5 group install -y "${groups_to_install[@]}"
+        # Tracking groups for removal is complex; skipping specific tracking for cleanup simplicity
+    fi
+
+    # Install URLs
+    if [[ ${#urls_to_install[@]} -gt 0 ]]; then
+        echo "Installing URL Packages: ${urls_to_install[*]}"
+        dnf5 install -y --nogpgcheck "${urls_to_install[@]}"
+        # URL packages are hard to track for auto-cleanup unless we query RPM DB immediately after.
+    fi
+
+    # Install Standard Packages
     if [[ ${#pkgs_to_install[@]} -gt 0 ]]; then
         dnf5 install -y --allowerasing "${pkgs_to_install[@]}"
         INSTALLED_DEPS+=("${pkgs_to_install[@]}")
@@ -224,7 +257,6 @@ build_kmod() {
         pkg=$(echo "$module_json" | jq -r '.source.package')
         
         echo "Fetching source RPM for ${pkg}..."
-        # Download source RPM
         dnf5 download -y --source --enablerepo="*-source" --nogpgcheck --destdir="${tmp_workdir}" "$pkg"
         
         local src_rpm
@@ -234,11 +266,9 @@ build_kmod() {
             return 1
         fi
 
-        # Install build dependencies from source RPM
         echo "Installing build dependencies for ${pkg}..."
         dnf5 builddep -y --nogpgcheck "$src_rpm"
 
-        # Install source RPM
         rpm -ivh --define "_topdir ${rpmbuild_dir}" "$src_rpm"
 
         # Prepare sources (unpack)
@@ -248,12 +278,10 @@ build_kmod() {
 
         # Locate source dir
         cd "${rpmbuild_dir}/BUILD" || exit
-        # Handle wrapper dirs
         local wrapper_dir
         wrapper_dir=$(find . -maxdepth 1 -mindepth 1 -type d | grep -v "SPECPARTS" | head -n 1)
         if [[ -n "$wrapper_dir" ]]; then cd "$wrapper_dir" || exit; fi
         
-        # Some akmods have another layer
         local src_dir
         src_dir=$(find . -maxdepth 1 -mindepth 1 -type d | grep -v "SPECPARTS" | head -n 1)
         if [[ -n "${src_dir}" ]]; then cd "${src_dir}" || exit; fi
@@ -280,20 +308,17 @@ build_kmod() {
         build_pwd="$PWD"
     fi
 
-    # Compile
     if [[ -z "$build_pwd" ]]; then
         echo "ERROR: Build directory not determined. Check source configuration."
         return 1
     fi
 
-    # Export variables for custom commands
     export KERNEL_VERSION="${kver}"
     export KERNEL_DIR="${kdir}"
     export INSTALL_MOD_DIR="${install_mod_dir}"
 
     if [[ -n "$script" ]]; then
         local script_path="/tmp/files/build-kmods/${script}"
-
         if [[ ! -f "$script_path" ]]; then
             echo "ERROR: Build script '$script' not found at '$script_path'"
             return 1
@@ -313,13 +338,11 @@ build_kmod() {
         echo "Compiling in ${build_pwd}..."
         make -C "${kdir}" M="${build_pwd}" modules
 
-        # Default Install & Strip
         mkdir -p "${install_mod_dir}"
         find "${build_pwd}" -type f -name "*.ko" -exec strip --strip-debug {} \;
         find "${build_pwd}" -type f -name "*.ko" -exec install -Dm644 {} "${install_mod_dir}/" \;
     fi
 
-    # Cleanup this module build
     rm -rf "$tmp_workdir"
 }
 
@@ -328,8 +351,6 @@ install_userspace_pkgs() {
     local download_dir=$1
     echo "--- Installing Userspace Packages ---"
     
-    # Find all RPMs in download dir (excluding src.rpm)
-    # Filter out akmod packages and build tools pulled by --resolve
     local rpms
     rpms=$(find "$download_dir" -name "*.rpm" ! -name "*.src.rpm" | grep -vE "/(akmod-|akmods-|kmodtool-|fakeroot-|rpmdevtools-|grubby-|systemd-rpm-macros-)")
     
@@ -337,7 +358,7 @@ install_userspace_pkgs() {
         # shellcheck disable=SC2086
         rpm -Uvh --force --nodeps $rpms
     else
-        echo "No userspace packages to install (after filtering)."
+        echo "No userspace packages to install."
     fi
 }
 
@@ -347,7 +368,6 @@ cleanup() {
     local download_dir=$1
     rm -rf "$download_dir" /usr/src/akmods
 
-    # Cleanup extra packages defined in config
     if echo "$CONFIG" | jq -e '.cleanup.packages' >/dev/null; then
         local pkgs
         mapfile -t pkgs < <(echo "$CONFIG" | jq -r '.cleanup.packages[]')
@@ -357,7 +377,6 @@ cleanup() {
         fi
     fi
 
-    # Cleanup extra files defined in config
     if echo "$CONFIG" | jq -e '.cleanup.files' >/dev/null; then
         echo "$CONFIG" | jq -r '.cleanup.files[]' | while read -r file; do
             echo "Removing file: $file"
@@ -373,7 +392,6 @@ cleanup() {
 
 # --- Main Execution ---
 
-# Orchestrates the entire build process
 main() {
     local kernel_pkg
     kernel_pkg=$(get_kernel_package)
@@ -399,11 +417,9 @@ main() {
 
     download_userspace_pkgs "$download_dir"
 
-    # Determine Kernel Directory (Source or Headers)
     local kernel_dir=""
     local kernel_src_list=()
     
-    # Check for source directories (list or string)
     if echo "$CONFIG" | jq -e '.kernel.devel.src' >/dev/null; then
         mapfile -t kernel_src_list < <(echo "$CONFIG" | jq -r '.kernel.devel.src[]')
     elif echo "$CONFIG" | jq -e '.kernel.src' >/dev/null; then
@@ -414,7 +430,6 @@ main() {
         fi
     fi
 
-    # Find first existing directory
     for dir in "${kernel_src_list[@]}"; do
         if [[ -d "$dir" ]]; then
             kernel_dir="$dir"

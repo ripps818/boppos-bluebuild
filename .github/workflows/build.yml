@@ -73,8 +73,19 @@ jobs:
           # 3. Login
           podman login ghcr.io -u ${{ github.actor }} -p ${{ github.token }}
 
-          # 4. Retag and Push
-          # Note: BlueBuild leaves the image at localhost/$IMAGE_NAME:latest
-          podman tag localhost/$IMAGE_NAME:latest ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:$TAG_NAME
+          # 4. Find the ID of the image we just built
+          # We use the most recently created image ID because :latest tag might not exist
+          IMAGE_ID=$(podman images --sort created --no-trunc --format "{{.ID}}" | head -n 1)
+
+          if [[ -z "$IMAGE_ID" ]]; then
+            echo "::error::Could not find any built image!"
+            exit 1
+          fi
+          echo "Found Image ID: $IMAGE_ID"
+
+          # 5. Retag and Push
+          TARGET_IMAGE="ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:$TAG_NAME"
           
-          podman push ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:$TAG_NAME
+          echo "Retagging $IMAGE_ID -> $TARGET_IMAGE"
+          podman tag $IMAGE_ID $TARGET_IMAGE
+          podman push $TARGET_IMAGE
