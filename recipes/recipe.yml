@@ -147,11 +147,6 @@ modules:
     build_deps:
       - python3-setuptools
     modules:
-      # - name: openrazer
-      #   source:
-      #     type: git
-      #     url: https://github.com/openrazer/openrazer.git
-      #   script: build-openrazer.sh
       - name: xone
         source:
           package: akmod-xone
@@ -170,6 +165,12 @@ modules:
         extras:
           - kvmfr
 
+  - type: sbsign 
+    source: local
+    keys:
+      priv: /usr/share/boppos/keys/boppos.priv
+      pem: /usr/share/boppos/keys/boppos.pem
+
   - type: justfiles
     validate: true
     install: true
@@ -180,7 +181,6 @@ modules:
     scripts:
       - fix-just-collision.sh
       - install-joystick-blacklist.sh
-      - sign-kmods.sh
       - kernel-postbuild.sh
 
   - type: default-flatpaks
