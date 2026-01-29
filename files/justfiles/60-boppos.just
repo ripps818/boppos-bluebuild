@@ -11,4 +11,4 @@ enroll-secure-boot-keys:
     @echo ""
     sudo mokutil --import /usr/share/boppos/keys/boppos.der
     @echo ""
-    @echo "✅ Setup complete. Please REBOOT now to finish enrollment.
+    @echo "✅ Setup complete. Please REBOOT now to finish enrollment."
