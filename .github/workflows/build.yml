@@ -64,21 +64,20 @@ jobs:
           IMAGE_NAME=$(yq '.name' ./recipes/${{ matrix.recipe }})
           
           # 2. Get Branch Name & Sanitize
-          # We take the raw branch name, replace '/' with '-', and force lowercase
           RAW_BRANCH="${{ github.ref_name }}"
           TAG_NAME=$(echo "$RAW_BRANCH" | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')
           
           echo "Tagging image as: $TAG_NAME"
 
-          # 3. Login
-          podman login ghcr.io -u ${{ github.actor }} -p ${{ github.token }}
+          # 3. Login (Using Docker)
+          echo "${{ github.token }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-          # 4. Find the ID of the image we just built
-          # We use the most recently created image ID because :latest tag might not exist
-          IMAGE_ID=$(podman images --sort created --no-trunc --format "{{.ID}}" | head -n 1)
+          # 4. Find the ID of the image we just built (Using Docker)
+          # Docker lists most recent images first by default
+          IMAGE_ID=$(docker images --format "{{.ID}}" | head -n 1)
 
           if [[ -z "$IMAGE_ID" ]]; then
-            echo "::error::Could not find any built image!"
+            echo "::error::Could not find any built image in Docker!"
             exit 1
           fi
           echo "Found Image ID: $IMAGE_ID"
@@ -87,5 +86,5 @@ jobs:
           TARGET_IMAGE="ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:$TAG_NAME"
           
           echo "Retagging $IMAGE_ID -> $TARGET_IMAGE"
-          podman tag $IMAGE_ID $TARGET_IMAGE
-          podman push $TARGET_IMAGE
+          docker tag $IMAGE_ID $TARGET_IMAGE
+          docker push $TARGET_IMAGE
