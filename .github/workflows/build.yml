@@ -1,19 +1,21 @@
 name: bluebuild
 on:
   schedule:
-    - cron:
-        "00 06 * * *" # build at 06:00 UTC every day
-        # (20 minutes after last ublue images start building)
-  # push:
-  #   paths-ignore: # don't rebuild if only documentation has changed
-  #     - "**.md"
-  #
-  # pull_request:
-  workflow_dispatch: # allow manually triggering builds
+    - cron: "00 06 * * *"
+  push:
+    branches:
+      - main        # 🛑 Only auto-build on push if it's the main branch
+    paths-ignore:
+      - "**.md"
+  pull_request:
+    branches:
+      - main        # 🛑 Only build PRs that target main
+  workflow_dispatch: # ✅ Always allows manual clicks on any branch
+
 concurrency:
-  # only run one build at a time
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
   cancel-in-progress: true
+
 jobs:
   bluebuild:
     name: Build Custom Image
@@ -23,10 +25,9 @@ jobs:
       packages: write
       id-token: write
     strategy:
-      fail-fast: false # stop GH from cancelling all matrix builds if one fails
+      fail-fast: false
       matrix:
         recipe:
-          # !! Add your recipes here
           - recipe.yml
     steps:
       - name: Checkout
@@ -36,7 +37,9 @@ jobs:
         shell: bash
         run: |
           echo "${{ secrets.SECURE_BOOT_KEY }}" > boppos.priv
-
+          # Only remove gitignore if strictly necessary for the build to see ignored files
+          rm -f .gitignore 
+          
       - name: Build Custom Image
         uses: blue-build/github-action@v1.11
         with:
@@ -44,15 +47,29 @@ jobs:
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number }}
+          # FIX: Changed 'live' to 'main' to match your trigger above
+          push: ${{ github.ref == 'refs/heads/main' }}
           skip_checkout: true
-
-          # enabled by default, disable if your image is small and you want faster builds
           maximize_build_space: true
 
-      - name: Push Experimental Image
+      - name: Push Branch Tag
         shell: bash
         run: |
-          OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          # 1. Get Image Name
+          IMAGE_NAME=$(yq '.name' ./recipes/${{ matrix.recipe }})
+          
+          # 2. Get Branch Name & Sanitize
+          # We take the raw branch name, replace '/' with '-', and force lowercase
+          RAW_BRANCH="${{ github.ref_name }}"
+          TAG_NAME=$(echo "$RAW_BRANCH" | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')
+          
+          echo "Tagging image as: $TAG_NAME"
+
+          # 3. Login
           podman login ghcr.io -u ${{ github.actor }} -p ${{ github.token }}
-          podman tag localhost/boppos-bluebuild:latest ghcr.io/$OWNER_LC/boppos-bluebuild:experimental
-          podman push ghcr.io/$OWNER_LC/boppos-bluebuild:experimental
+
+          # 4. Retag and Push
+          # Note: BlueBuild leaves the image at localhost/$IMAGE_NAME:latest
+          podman tag localhost/$IMAGE_NAME:latest ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:$TAG_NAME
+          
+          podman push ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:$TAG_NAME
