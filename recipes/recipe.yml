@@ -131,6 +131,7 @@ modules:
         - hikariknight/looking-glass-kvmfr
       files:
         - terra-source.repo
+        - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
       nonfree: rpmfusion
     kernel:
       package: kernel-cachyos
@@ -140,16 +141,17 @@ modules:
         - rpmfusion-free-release
         - rpmfusion-nonfree-release
       files:
+        - /etc/yum.repos.d/terra.repo
         - /etc/yum.repos.d/terra-source.repo
         - /etc/yum.repos.d/_copr*hikariknight-looking-glass-kvmfr.repo
     build_deps:
       - python3-setuptools
     modules:
-      - name: openrazer
-        source:
-          type: git
-          url: https://github.com/openrazer/openrazer.git
-        script: build-openrazer.sh
+      # - name: openrazer
+      #   source:
+      #     type: git
+      #     url: https://github.com/openrazer/openrazer.git
+      #   script: build-openrazer.sh
       - name: xone
         source:
           package: akmod-xone
