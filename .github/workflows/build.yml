@@ -52,39 +52,6 @@ jobs:
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number }}
-          # FIX: Changed 'live' to 'main' to match your trigger above
           push: ${{ github.ref == 'refs/heads/main' }}
           skip_checkout: true
           maximize_build_space: true
-
-      - name: Push Branch Tag
-        shell: bash
-        run: |
-          # 1. Get Image Name
-          IMAGE_NAME=$(yq '.name' ./recipes/${{ matrix.recipe }})
-          
-          # 2. Get Branch Name & Sanitize
-          RAW_BRANCH="${{ github.ref_name }}"
-          TAG_NAME=$(echo "$RAW_BRANCH" | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')
-          
-          echo "Tagging image as: $TAG_NAME"
-
-          # 3. Login (Using Docker)
-          echo "${{ github.token }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-          # 4. Find the ID of the image we just built (Using Docker)
-          # Docker lists most recent images first by default
-          IMAGE_ID=$(docker images --format "{{.ID}}" | head -n 1)
-
-          if [[ -z "$IMAGE_ID" ]]; then
-            echo "::error::Could not find any built image in Docker!"
-            exit 1
-          fi
-          echo "Found Image ID: $IMAGE_ID"
-
-          # 5. Retag and Push
-          TARGET_IMAGE="ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:$TAG_NAME"
-          
-          echo "Retagging $IMAGE_ID -> $TARGET_IMAGE"
-          docker tag $IMAGE_ID $TARGET_IMAGE
-          docker push $TARGET_IMAGE
