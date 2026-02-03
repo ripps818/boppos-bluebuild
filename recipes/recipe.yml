@@ -227,3 +227,5 @@ modules:
       - amdgpu.gpu_recovery=1
       - split_lock_detect=off
       - zswap.enabled=1
+
+  - type: signing

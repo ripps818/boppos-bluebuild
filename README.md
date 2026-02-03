@@ -20,7 +20,7 @@ ujust enroll-secure-boot-keys
 
 I've included some optional configurations in `/usr/share/boppos/unused_files` for users who need advanced virtualization features like **Looking Glass (KVMFR)** or **Nested Virtualization**. These are disabled by default to keep the core image lean and avoid issues with some anti-cheat systems.
 
-### Activating Extras
+#### Activating Extras
 To enable these features, you can use the built-in `ujust` command:
 
 ```bash
