@@ -1,10 +1,37 @@
-# Bopp OS Bluebuild
-Custom image of Bazzite-dx that also uses the CachyOS kernel created using blue-build. It carries over several CachyOS options and services and is generally optimized for AMD gaming. Also added some custom scripts to add kernel modules, such as xone and xpad-noone.
+## How BoppOS differs from Bazzite
 
-I've written a custom secureboot signing system so that Secure Boot will work with the CachyOS kernel and any custom kernel modules added.
-- The kernel has been signed with my own key. I've copied the standard Bazzite method of secureboot enrolling.
-```
+While this image is based on Bazzite-dx, it uses the **CachyOS kernel** and a specific set of kernel arguments to prioritize gaming latency and hardware control for AMD users:
+
+* **Kernel Preemption:** Set to `full`. This makes the system more responsive during heavy CPU load, prioritizing game frames over background tasks.
+* **Memory Management:** Uses `transparent_hugepage=madvise`. This gives a performance boost to games and apps that support huge pages without the high RAM overhead of the `always` setting.
+* **AMD Optimizations:** Includes `iommu=pt` for better DMA performance and `amdgpu.ppfeaturemask=0xffffffff` so you can undervolt or overclock your GPU using tools like LACT.
+* **Compatibility:** Disables `split_lock_detect` to prevent performance drops in older game engines that can trigger kernel-level slowdowns.
+* **Extra Drivers:** Includes `xone` and `xpad-noone` for Xbox controller support, and the `KVMFR` module for Looking Glass users.
+
+### Secure Boot
+
+Since this uses the CachyOS kernel, I’ve included a custom signing system so that **Secure Boot** remains functional even with these custom modules. The kernel and modules are signed with a private key; you can enroll the keys using:
+
+```bash
 ujust enroll-secure-boot-keys
+```
+
+### Optional Virtualization Extras
+
+I've included some optional configurations in `/usr/share/boppos/unused_files` for users who need advanced virtualization features like **Looking Glass (KVMFR)** or **Nested Virtualization**. These are disabled by default to keep the core image lean and avoid issues with some anti-cheat systems.
+
+### Activating Extras
+To enable these features, you can use the built-in `ujust` command:
+
+```bash
+ujust setup-kvm-extras
+```
+
+### Performance Toggling
+BoppOS defaults to `preempt=full` for the lowest gaming latency. If you need a different balance, you can switch modes instantly without a reboot:
+
+```bash
+ujust toggle-preempt
 ```
 
 ## Installation
@@ -32,10 +59,6 @@ To rebase an existing atomic Fedora installation to the latest build:
   ```
 
 The `latest` tag will automatically point to the latest build. That build will still always use the Fedora version specified in `recipe.yml`, so you won't get accidentally updated to the next major version.
-
-## ISO
-
-If build on Fedora Atomic, you can generate an offline ISO with the instructions available [here](https://blue-build.org/learn/universal-blue/#fresh-install-from-an-iso). These ISOs cannot unfortunately be distributed on GitHub for free due to large sizes, so for public projects something else has to be used for hosting.
 
 ## Verification
 
