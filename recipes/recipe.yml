@@ -217,15 +217,13 @@ modules:
         - tailscaled.service
         - warp-svc.service
 
-  - type: script
-    snippets:
-      - "rpm-ostree kargs --delete=kvm_amd.nested=1 --delete=rd.driver.pre=vfio_pci --delete=vfio_pci.disable_vga=1"
-
   - type: kargs
-    arch: x86_64
     kargs:
-      - iommu=pt 
-      - preempt=full 
+      - iommu=pt
+      - preempt=full
       - transparent_hugepage=madvise
-      - split_lock_detect=off 
+      - transparent_hugepage.defrag=defer+madvise
       - amdgpu.ppfeaturemask=0xffffffff
+      - amdgpu.gpu_recovery=1
+      - split_lock_detect=off
+      - zswap.enabled=1
