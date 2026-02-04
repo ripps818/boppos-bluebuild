@@ -208,6 +208,12 @@ modules:
           - io.github.Faugus.faugus-launcher
           - com.vysp3r.ProtonPlus
           - org.freedesktop.Platform.VulkanLayer.gamescope
+      - notify: true
+        scope: system
+        repo:
+          url: https://raw.githubusercontent.com/ShyVortex/helium-flatpak/refs/heads/main/helium.flatpakrepo
+        include:
+          - com.imputnet.Helium
 
   - type: systemd
     system:
