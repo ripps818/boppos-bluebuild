@@ -40,7 +40,7 @@ modules:
         - Roboto
         - Rubik
 
-  - type: dnf
+- type: dnf
     repos:
       cleanup: true
       copr:
@@ -51,8 +51,8 @@ modules:
         - hikariknight/looking-glass-kvmfr
         - bieszczaders/kernel-cachyos
         - bieszczaders/kernel-cachyos-addons
-      files: 
-        - helium-browser.repo
+      files:
+        # - helium-browser.repo  
         - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
         - https://repository.mullvad.net/rpm/stable/mullvad.repo
         - https://pkg.cloudflareclient.com/cloudflare-warp-ascii.repo
@@ -64,17 +64,25 @@ modules:
         - hhd
         - hhd-ui
         - kernel
-        - kernel-core 
-        - kernel-modules 
-        - kernel-modules-core 
+        - kernel-core
+        - kernel-modules
+        - kernel-modules-core
         - kernel-modules-extra
         - kernel-modules-akmods
         - kernel-devel-matched
+        - mesa-va-drivers-freeworld
 
     install:
       skip-unavailable: true
       allow-erasing: true
       packages:
+        # --- EXPLICITLY REQUEST TERRA MESA ---
+        # Listing these forces DNF to pick the highest version (Terra)
+        # and swap out the Fedora stock ones.
+        - mesa-dri-drivers
+        - mesa-vulkan-drivers
+        - mesa-libgbm
+        - mesa-libglapi
         # CachyOS Kernel
         - kernel-cachyos
         - kernel-cachyos-core
