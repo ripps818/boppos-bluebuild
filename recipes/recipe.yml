@@ -207,6 +207,7 @@ modules:
           - com.heroicgameslauncher.hgl
           - io.github.Faugus.faugus-launcher
           - com.vysp3r.ProtonPlus
+        check: false
       - notify: true
         scope: system
         repo:
