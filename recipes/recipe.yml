@@ -207,7 +207,6 @@ modules:
           - com.heroicgameslauncher.hgl
           - io.github.Faugus.faugus-launcher
           - com.vysp3r.ProtonPlus
-          - org.freedesktop.Platform.VulkanLayer.gamescope
       - notify: true
         scope: system
         repo:
