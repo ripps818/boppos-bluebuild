@@ -1,3 +1,5 @@
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/M4M81TUBKF)
+
 ## How BoppOS differs from Bazzite
 
 While this image is based on Bazzite-dx, it uses the **CachyOS kernel** and a specific set of kernel arguments to prioritize gaming latency and hardware control for AMD users:
