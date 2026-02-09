@@ -52,7 +52,6 @@ modules:
         - bieszczaders/kernel-cachyos
         - bieszczaders/kernel-cachyos-addons
       files:
-        # - helium-browser.repo  
         - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
         - https://repository.mullvad.net/rpm/stable/mullvad.repo
         - https://pkg.cloudflareclient.com/cloudflare-warp-ascii.repo
@@ -109,7 +108,6 @@ modules:
         - openrgb
         - steam-devices
         # Networking
-        - helium-browser
         - mullvad-vpn
         - cloudflare-warp
         # Virtual Machine
@@ -191,9 +189,6 @@ modules:
 
   - type: default-flatpaks
     configurations:
-      - scope: user
-        repo:
-          title: Flathub (user)
       - notify: true
         scope: system
         repo:
@@ -209,10 +204,12 @@ modules:
           - com.vysp3r.ProtonPlus
         check: false
       - notify: true
-        scope: system
+        scope: user
         repo:
           url: https://raw.githubusercontent.com/ShyVortex/helium-flatpak/refs/heads/main/helium.flatpakrepo
-        include:
+          name: helium
+          gpg-verify: false
+        install:
           - com.imputnet.Helium
 
   - type: systemd
