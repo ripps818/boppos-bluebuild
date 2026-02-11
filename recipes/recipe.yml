@@ -222,12 +222,16 @@ modules:
     fonts:
       nerd-fonts:
         - FiraCode
+        - FiraMono
         - Hack
         - SourceCodePro
         - Terminus
+        - Meslo
+        - Monoid
         - JetBrainsMono
         - DejaVuSansMono
         - NerdFontsSymbolsOnly
+        - Noto
       google-fonts:
         - Alegreya
         - Cabin
@@ -239,8 +243,13 @@ modules:
         - Roboto
         - Rubik
         - Noto Sans
+        - Noto Sans Traditional Chinese
+        - Noto Sans Japanese
+        - Noto Sans Korean
+        - Noto Sans Mono
         - Noto Serif
-        - Noto Mono
-        - Noto CJK
+        - Noto Serif Traditional Chinese
+        - Noto Serif Japanese
+        - Noto Serif Korean
 
   - type: signing
