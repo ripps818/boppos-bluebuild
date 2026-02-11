@@ -100,6 +100,7 @@ modules:
         - mpv
         - yt-dlp
         # CLI
+        - google-noto-fonts-all
         - atuin
         - bat
         - byobu
@@ -231,7 +232,6 @@ modules:
         - JetBrainsMono
         - DejaVuSansMono
         - NerdFontsSymbolsOnly
-        - Noto
       google-fonts:
         - Alegreya
         - Cabin
@@ -242,14 +242,5 @@ modules:
         - Open Sans
         - Roboto
         - Rubik
-        - Noto Sans
-        - Noto Sans Traditional Chinese
-        - Noto Sans Japanese
-        - Noto Sans Korean
-        - Noto Sans Mono
-        - Noto Serif
-        - Noto Serif Traditional Chinese
-        - Noto Serif Japanese
-        - Noto Serif Korean
 
   - type: signing
