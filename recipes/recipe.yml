@@ -20,26 +20,6 @@ modules:
       - check-files.sh
       - kernel-prebuild.sh
 
-  - type: fonts
-    fonts:
-      nerd-fonts:
-        - FiraCode
-        - Hack
-        - SourceCodePro
-        - Terminus
-        - JetBrainsMono
-        - NerdFontsSymbolsOnly
-      google-fonts:
-        - Alegreya
-        - Cabin
-        - Inter
-        - Lato
-        - Montserrat
-        - Mulish
-        - Open Sans
-        - Roboto
-        - Rubik
-
   - type: dnf
     repos:
       cleanup: true
@@ -237,5 +217,30 @@ modules:
       - amdgpu.gpu_recovery=1
       - split_lock_detect=off
       - zswap.enabled=1
+
+  - type: fonts
+    fonts:
+      nerd-fonts:
+        - FiraCode
+        - Hack
+        - SourceCodePro
+        - Terminus
+        - JetBrainsMono
+        - DejaVuSansMono
+        - NerdFontsSymbolsOnly
+      google-fonts:
+        - Alegreya
+        - Cabin
+        - Inter
+        - Lato
+        - Montserrat
+        - Mulish
+        - Open Sans
+        - Roboto
+        - Rubik
+        - Noto Sans
+        - Noto Serif
+        - Noto Mono
+        - Noto CJK
 
   - type: signing
