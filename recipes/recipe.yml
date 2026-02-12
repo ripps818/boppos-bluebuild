@@ -183,14 +183,6 @@ modules:
           - io.github.Faugus.faugus-launcher
           - com.vysp3r.ProtonPlus
         check: false
-      - notify: true
-        scope: user
-        repo:
-          url: https://raw.githubusercontent.com/ShyVortex/helium-flatpak/refs/heads/main/helium.flatpakrepo
-          name: helium
-          gpg-verify: false
-        install:
-          - com.imputnet.Helium
 
   - type: systemd
     system:
