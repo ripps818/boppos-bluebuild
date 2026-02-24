@@ -1,7 +1,7 @@
 name: bluebuild
 on:
   schedule:
-    - cron: "00 06 * * *"
+    - cron: "00 04 * * *"
   push:
     branches:
       - main        # 🛑 Only auto-build on push if it's the main branch
