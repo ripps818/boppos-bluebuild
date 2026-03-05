@@ -30,7 +30,7 @@ modules:
         - bieszczaders/kernel-cachyos
         - bieszczaders/kernel-cachyos-addons
       files:
-        - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
+        - https://raw.githubusercontent.com/terrapkg/subatomic-repos/main/terra.repo
         - https://repository.mullvad.net/rpm/stable/mullvad.repo
         - https://pkg.cloudflareclient.com/cloudflare-warp-ascii.repo
       nonfree: rpmfusion
@@ -115,7 +115,7 @@ modules:
         - hikariknight/looking-glass-kvmfr
       files:
         - terra-source.repo
-        - https://github.com/terrapkg/subatomic-repos/raw/main/terra.repo
+        - https://raw.githubusercontent.com/terrapkg/subatomic-repos/main/terra.repo
       nonfree: rpmfusion
     kernel:
       package: kernel-cachyos

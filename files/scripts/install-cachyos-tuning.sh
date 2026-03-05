@@ -8,7 +8,7 @@ TUNED_DIR="/usr/lib/tuned"
 BACKUP_DIR="/usr/lib/tuned.bak"
 
 # --- Uninstall/Restore ---
-if [[ "$1" == "uninstall" ]]; then
+if [[ "${1:-}" == "uninstall" ]]; then
     echo "--- Uninstalling CachyOS Tuned Profiles ---"
     if [[ -d "${BACKUP_DIR}" ]]; then
         echo "Restoring default profiles..."
