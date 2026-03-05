@@ -61,7 +61,7 @@ chmod 0600 "$INITRAMFS"
 
 # --- Final DNF Cleanup ---
 rm -rf /var/lib/dnf
-rm -f /var/tmp/*
+rm -rf /var/tmp/*
 dnf5 clean all
 
 echo "--- Kernel Post-Build Complete ---"
