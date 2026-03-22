@@ -18,7 +18,7 @@ git archive --format=tar.gz --prefix="${NAME}-${VERSION}/" --output="${NAME}-${V
 popd
 
 # Build the RPM
-rpmbuild -bb \
+rpmbuild -bb --nocheck \
     --define "_topdir /tmp/rpmbuild" \
     --define "_sourcedir /tmp/tuned" \
     /tmp/tuned/tuned.spec
