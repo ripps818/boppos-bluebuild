@@ -52,6 +52,7 @@ modules:
         - kernel-modules-extra
         - kernel-modules-akmods
         - kernel-devel-matched
+        - gamescope-session-plus
         - mesa-va-drivers-freeworld
 
     install:
