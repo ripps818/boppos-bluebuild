@@ -10,6 +10,12 @@ git clone --depth=1 --branch=cachyos https://github.com/cachyos/tuned.git /tmp/t
 dnf install -y rpm-build
 dnf builddep -y /tmp/tuned/tuned.spec
 
+# --- Patch the tuned.spec file to include powerprofilesctl ---
+# This addresses the "Installed (but unpackaged) file(s) found" error.
+# The `make install-ppd` step installs this binary, but it's not always
+# explicitly listed in the upstream tuned.spec for all distributions.
+echo "Patching tuned.spec to include /usr/bin/powerprofilesctl..."
+sed -i '/^%files -n tuned-ppd$/a/usr/bin/powerprofilesctl' /tmp/tuned/tuned.spec
 # Create the source tarball
 pushd /tmp/tuned
 NAME=$(grep -m1 '^Name:' tuned.spec | awk '{print $2}')
