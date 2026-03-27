@@ -15,7 +15,7 @@ dnf builddep -y /tmp/tuned/tuned.spec
 # The `make install-ppd` step installs this binary, but it's not always
 # explicitly listed in the upstream tuned.spec for all distributions.
 echo "Patching tuned.spec to include /usr/bin/powerprofilesctl..."
-sed -i '/^%files -n tuned-ppd$/a/usr/bin/powerprofilesctl' /tmp/tuned/tuned.spec
+sed -i '/^%files -n tuned-ppd/a /usr/bin/powerprofilesctl' /tmp/tuned/tuned.spec
 # Create the source tarball
 pushd /tmp/tuned
 NAME=$(grep -m1 '^Name:' tuned.spec | awk '{print $2}')
