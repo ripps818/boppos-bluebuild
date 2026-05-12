@@ -33,7 +33,6 @@ modules:
       files:
         - https://raw.githubusercontent.com/terrapkg/subatomic-repos/main/terra.repo
         - https://repository.mullvad.net/rpm/stable/mullvad.repo
-        - https://pkg.cloudflareclient.com/cloudflare-warp-ascii.repo
       nonfree: rpmfusion
 
     remove:

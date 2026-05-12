@@ -7,6 +7,9 @@ echo "--- Force-installing cloudflare-warp (CLI only) ---"
 mkdir -p /tmp/warp
 cd /tmp/warp
 
+# Add the repository explicitly since BlueBuild cleans up repos after the dnf module
+curl -fsSL https://pkg.cloudflareclient.com/cloudflare-warp-ascii.repo -o /etc/yum.repos.d/cloudflare-warp-ascii.repo
+
 dnf5 download -y --resolve cloudflare-warp
 rpm -ivh --nodeps ./cloudflare-warp*.rpm
 
@@ -23,4 +26,5 @@ chmod +x /usr/bin/wgcf
 
 # Clean up
 cd /
+rm -f /etc/yum.repos.d/cloudflare-warp-ascii.repo
 rm -rf /tmp/warp
