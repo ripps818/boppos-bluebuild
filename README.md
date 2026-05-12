@@ -36,6 +36,29 @@ BoppOS defaults to `preempt=full` for the lowest gaming latency. If you need a d
 ujust toggle-preempt
 ```
 
+### Cloudflare WARP Options 
+Modern Fedora versions have deprecated the legacy WebKit libraries required by the Cloudflare WARP GUI. However, BoppOS comes with two pre-installed alternatives to connect to WARP: + 
+
+#### Option 1: Native WireGuard via wgcf (Recommended) 
+
+We've bundled wgcf, an open-source tool that generates a native WireGuard configuration for your WARP account. This uses fewer resources and integrates seamlessly into the system's network settings. 
+
+You can automatically configure and import the VPN profile (including adding an optional WARP+ license key) by running: 
+```bash 
+ujust setup-warp-wireguard
+```
+
+Once completed, you can toggle the VPN on or off directly from your system's network settings GUI! 
+
+#### Option 2: WARP CLI +The official WARP daemon and command-line interface are force-installed and fully functional. 
+
+```bash 
+# 1. Register your device 
+warp-cli registration new 
+# 2. Connect 
+warp-cli connect
+```
+
 ## Installation
 
 > [!WARNING]  
