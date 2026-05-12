@@ -15,11 +15,10 @@ rpm -ivh --nodeps ./cloudflare-warp*.rpm
 
 echo "--- Installing wgcf (Native WireGuard alternative) ---"
 # wgcf is a tool to generate WireGuard profiles from Cloudflare WARP accounts
-# We pull the latest release binary for linux_amd64 directly from GitHub
-WGCF_URL=$(curl -s https://api.github.com/repos/ViRb3/wgcf/releases/latest | \
-    jq -r '.assets[].browser_download_url' | \
-    grep 'linux_amd64$' | \
-    head -n 1)
+# We parse the redirect header to avoid GitHub API rate-limiting in CI
+LATEST_TAG=$(curl -sI https://github.com/ViRb3/wgcf/releases/latest | grep -i '^location:' | awk -F'/' '{print $NF}' | tr -d '\r')
+VERSION="${LATEST_TAG#v}"
+WGCF_URL="https://github.com/ViRb3/wgcf/releases/download/${LATEST_TAG}/wgcf_${VERSION}_linux_amd64"
 
 curl -fsSL "$WGCF_URL" -o /usr/bin/wgcf
 chmod +x /usr/bin/wgcf
