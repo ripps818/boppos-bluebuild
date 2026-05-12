@@ -10,7 +10,7 @@ cd /tmp/warp
 # Add the repository explicitly since BlueBuild cleans up repos after the dnf module
 curl -fsSL https://pkg.cloudflareclient.com/cloudflare-warp-ascii.repo -o /etc/yum.repos.d/cloudflare-warp-ascii.repo
 
-dnf5 download -y --resolve cloudflare-warp
+dnf5 download -y cloudflare-warp --arch=x86_64
 rpm -ivh --nodeps ./cloudflare-warp*.rpm
 
 echo "--- Installing wgcf (Native WireGuard alternative) ---"
