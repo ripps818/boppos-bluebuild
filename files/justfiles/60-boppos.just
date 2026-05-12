@@ -43,19 +43,19 @@ setup-warp-wireguard:
     #!/usr/bin/env bash
     set -euo pipefail
     echo "--- Creating Cloudflare WARP WireGuard Profile ---"
-    
+
     # Isolate configuration files in the user's config directory
     WORK_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/wgcf"
     mkdir -p "$WORK_DIR"
     cd "$WORK_DIR"
-    
+
     if [ -f "wgcf-account.toml" ]; then
         echo "Found existing wgcf account."
     else
         echo "Registering new wgcf account..."
         wgcf register --accept-tos
     fi
-    
+
     echo ""
     read -p "Do you have a WARP+ (premium) License Key? [y/N]: " HAS_KEY
     if [[ "$HAS_KEY" =~ ^[Yy]$ ]]; then
@@ -72,10 +72,10 @@ setup-warp-wireguard:
             fi
         fi
     fi
-    
+
     echo "Generating WireGuard profile..."
     wgcf generate
-    
+
     # Import into NetworkManager (Requires root/sudo for system connections)
     if nmcli connection show "wgcf-profile" >/dev/null 2>&1; then
         echo "Profile 'wgcf-profile' already exists in NetworkManager."
@@ -84,6 +84,6 @@ setup-warp-wireguard:
         echo "Importing profile into NetworkManager..."
         sudo nmcli connection import type wireguard file wgcf-profile.conf
     fi
-    
+
     echo "--- Setup Complete! ---"
     echo "You can now toggle WARP via your system's Network Settings GUI!"
