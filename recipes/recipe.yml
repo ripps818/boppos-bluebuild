@@ -18,6 +18,9 @@ modules:
       - check-files.sh
       - kernel-prebuild.sh
       - build-tuned.sh
+    snippets:
+      - ln -sf /bin/true /usr/bin/grub2-editenv
+      - ln -sf /bin/true /usr/bin/grub2-probe
 
   - type: dnf
     repos:
