@@ -21,6 +21,7 @@ modules:
     snippets:
       - ln -sf /bin/true /usr/bin/grub2-editenv
       - ln -sf /bin/true /usr/bin/grub2-probe
+      - sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/*akmods*.repo || true
 
   - type: dnf
     repos:
