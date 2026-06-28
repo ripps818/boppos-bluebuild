@@ -114,8 +114,8 @@ install_deps() {
     
     # Check for source directories (list or string)
     local kernel_src_list=()
-    if echo "$CONFIG" | jq -e '.kernel.devel.src' >/dev/null; then
-        mapfile -t kernel_src_list < <(echo "$CONFIG" | jq -r '.kernel.devel.src[]')
+    if echo "$CONFIG" | jq -e '.kernel.devel | select(type == "object") | .src' >/dev/null; then
+        mapfile -t kernel_src_list < <(echo "$CONFIG" | jq -r '.kernel.devel | select(type == "object") | .src[]')
     elif echo "$CONFIG" | jq -e '.kernel.src' >/dev/null; then
         local src_val
         src_val=$(echo "$CONFIG" | jq -r '.kernel.src')
@@ -129,8 +129,8 @@ install_deps() {
     # Only install devel packages if no source directory is specified
     if [[ ${#kernel_src_list[@]} -eq 0 ]]; then
         local devel_pkgs=()
-        if echo "$CONFIG" | jq -e '.kernel.devel.package' >/dev/null; then
-            mapfile -t devel_pkgs < <(echo "$CONFIG" | jq -r '.kernel.devel.package[]')
+        if echo "$CONFIG" | jq -e '.kernel.devel | select(type == "object") | .package' >/dev/null; then
+            mapfile -t devel_pkgs < <(echo "$CONFIG" | jq -r '.kernel.devel | select(type == "object") | .package[]')
         elif echo "$CONFIG" | jq -e '.kernel.devel' >/dev/null; then
              local d
              d=$(echo "$CONFIG" | jq -r '.kernel.devel')
@@ -257,7 +257,7 @@ build_kmod() {
         pkg=$(echo "$module_json" | jq -r '.source.package')
         
         echo "Fetching source RPM for ${pkg}..."
-        dnf5 download -y --source --enablerepo="*-source" --nogpgcheck --destdir="${tmp_workdir}" "$pkg"
+        dnf5 download -y --srpm --enable-repo="*-source" --nogpgcheck --destdir="${tmp_workdir}" "$pkg"
         
         local src_rpm
         src_rpm=$(find "${tmp_workdir}" -maxdepth 1 -name "*.src.rpm" | head -n 1)
@@ -420,8 +420,8 @@ main() {
     local kernel_dir=""
     local kernel_src_list=()
     
-    if echo "$CONFIG" | jq -e '.kernel.devel.src' >/dev/null; then
-        mapfile -t kernel_src_list < <(echo "$CONFIG" | jq -r '.kernel.devel.src[]')
+    if echo "$CONFIG" | jq -e '.kernel.devel | select(type == "object") | .src' >/dev/null; then
+        mapfile -t kernel_src_list < <(echo "$CONFIG" | jq -r '.kernel.devel | select(type == "object") | .src[]')
     elif echo "$CONFIG" | jq -e '.kernel.src' >/dev/null; then
         local src_val
         src_val=$(echo "$CONFIG" | jq -r '.kernel.src')
