@@ -287,7 +287,13 @@ build_kmod() {
         if [[ -n "${src_dir}" ]]; then cd "${src_dir}" || exit; fi
 
         if [[ -n "${builddir}" ]]; then cd "${builddir}" || exit; fi
-        build_pwd="$PWD"
+
+        # Move the source to a clean path to avoid characters like '^' which break Kbuild
+        local current_pwd="$PWD"
+        cd "${tmp_workdir}" || exit
+        local clean_pwd="${tmp_workdir}/clean-build"
+        mv "${current_pwd}" "${clean_pwd}"
+        build_pwd="${clean_pwd}"
 
     elif [[ "$source_type" == "git" ]]; then
         local url

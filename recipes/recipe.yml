@@ -138,16 +138,17 @@ modules:
         - /etc/yum.repos.d/_copr*hikariknight-looking-glass-kvmfr.repo
     build_deps:
       - python3-setuptools
+      - dwarves
     modules:
       - name: xone
         source:
-          package: akmod-xone
+          package: dkms-xone
         extras:
           - xone
           - xone-firmware
       - name: xpad-noone
         source:
-          package: akmod-xpad-noone
+          package: dkms-xpad-noone
         extras:
           - xpad-noone
       - name: kvmfr
