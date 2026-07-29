@@ -11,6 +11,7 @@ fi
 
 # Global to track installed dependencies for cleanup
 INSTALLED_DEPS=()
+DNF_OPTS=(--setopt=fastestmirror=True --setopt=max_parallel_downloads=10 --setopt=retries=5 --setopt=timeout=30)
 
 # --- Helper Functions ---
 
@@ -50,7 +51,7 @@ setup_repos() {
         mapfile -t coprs < <(echo "$CONFIG" | jq -r '.repos.copr[]')
         for copr in "${coprs[@]}"; do
             echo "Enabling COPR: $copr"
-            dnf5 -y copr enable "$copr"
+            dnf5 "${DNF_OPTS[@]}" -y copr enable "$copr"
         done
     fi
 
@@ -100,7 +101,7 @@ setup_repos() {
              echo "Installing RPMFusion..."
              local fedora_ver
              fedora_ver=$(rpm -E %fedora)
-             dnf5 install -y "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${fedora_ver}.noarch.rpm" \
+             dnf5 "${DNF_OPTS[@]}" install -y "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${fedora_ver}.noarch.rpm" \
                              "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${fedora_ver}.noarch.rpm"
         fi
     fi
@@ -172,20 +173,20 @@ install_deps() {
     # Install Groups
     if [[ ${#groups_to_install[@]} -gt 0 ]]; then
         echo "Installing Groups: ${groups_to_install[*]}"
-        dnf5 group install -y "${groups_to_install[@]}"
+        dnf5 "${DNF_OPTS[@]}" group install -y "${groups_to_install[@]}"
         # Tracking groups for removal is complex; skipping specific tracking for cleanup simplicity
     fi
 
     # Install URLs
     if [[ ${#urls_to_install[@]} -gt 0 ]]; then
         echo "Installing URL Packages: ${urls_to_install[*]}"
-        dnf5 install -y --nogpgcheck "${urls_to_install[@]}"
+        dnf5 "${DNF_OPTS[@]}" install -y --nogpgcheck "${urls_to_install[@]}"
         # URL packages are hard to track for auto-cleanup unless we query RPM DB immediately after.
     fi
 
     # Install Standard Packages
     if [[ ${#pkgs_to_install[@]} -gt 0 ]]; then
-        dnf5 install -y --allowerasing "${pkgs_to_install[@]}"
+        dnf5 "${DNF_OPTS[@]}" install -y --allowerasing "${pkgs_to_install[@]}"
         INSTALLED_DEPS+=("${pkgs_to_install[@]}")
     fi
 }
@@ -199,7 +200,7 @@ download_userspace_pkgs() {
     
     if [[ ${#pkgs[@]} -gt 0 ]]; then
         echo "--- Downloading Userspace Packages: ${pkgs[*]} ---"
-        dnf5 download -y --destdir="$download_dir" --resolve \
+        dnf5 "${DNF_OPTS[@]}" download -y --destdir="$download_dir" --resolve \
             --arch x86_64 --arch noarch \
             "${pkgs[@]}"
     fi
@@ -257,7 +258,8 @@ build_kmod() {
         pkg=$(echo "$module_json" | jq -r '.source.package')
         
         echo "Fetching source RPM for ${pkg}..."
-        dnf5 download -y --srpm --enable-repo="*-source" --nogpgcheck --destdir="${tmp_workdir}" "$pkg"
+        dnf5 "${DNF_OPTS[@]}" download -y --srpm --enable-repo="*-source" --enable-repo="*copr*" --nogpgcheck --destdir="${tmp_workdir}" "$pkg" || \
+        dnf5 "${DNF_OPTS[@]}" download -y --srpm --nogpgcheck --destdir="${tmp_workdir}" "$pkg"
         
         local src_rpm
         src_rpm=$(find "${tmp_workdir}" -maxdepth 1 -name "*.src.rpm" | head -n 1)
@@ -267,7 +269,7 @@ build_kmod() {
         fi
 
         echo "Installing build dependencies for ${pkg}..."
-        dnf5 builddep -y --nogpgcheck "$src_rpm"
+        dnf5 "${DNF_OPTS[@]}" builddep -y --nogpgcheck "$src_rpm"
 
         rpm -ivh --define "_topdir ${rpmbuild_dir}" "$src_rpm"
 
@@ -379,7 +381,7 @@ cleanup() {
         mapfile -t pkgs < <(echo "$CONFIG" | jq -r '.cleanup.packages[]')
         if [[ ${#pkgs[@]} -gt 0 ]]; then
             echo "Removing cleanup packages: ${pkgs[*]}"
-            dnf5 remove -y "${pkgs[@]}" || true
+            dnf5 "${DNF_OPTS[@]}" remove -y "${pkgs[@]}" || true
         fi
     fi
 
@@ -392,7 +394,7 @@ cleanup() {
 
     if [[ ${#INSTALLED_DEPS[@]} -gt 0 ]]; then
         echo "Removing build dependencies: ${INSTALLED_DEPS[*]}"
-        dnf5 remove -y "${INSTALLED_DEPS[@]}"
+        dnf5 "${DNF_OPTS[@]}" remove -y "${INSTALLED_DEPS[@]}"
     fi
 }
 
