@@ -119,8 +119,6 @@ modules:
   - type: build-kmods
     source: local
     repos:
-      copr:
-        - hikariknight/looking-glass-kvmfr
       files:
         - terra-source.repo
         - https://raw.githubusercontent.com/terrapkg/subatomic-repos/main/terra.repo
@@ -135,7 +133,6 @@ modules:
       files:
         - /etc/yum.repos.d/terra.repo
         - /etc/yum.repos.d/terra-source.repo
-        - /etc/yum.repos.d/_copr*hikariknight-looking-glass-kvmfr.repo
     build_deps:
       - python3-setuptools
       - dwarves
@@ -153,8 +150,8 @@ modules:
           - xpad-noone
       - name: kvmfr
         source:
-          package: akmod-kvmfr
-        builddir: "LookingGlass-master/module"
+          url: https://github.com/gnif/LookingGlass.git
+        builddir: "module"
 
   - type: sbsign 
     source: local
