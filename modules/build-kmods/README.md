@@ -31,7 +31,6 @@ The module is configured via the `recipe.yaml` using the following schema:
 | `copr` | List<String> | List of COPR repositories to enable. |
 | `files` | List<String> | List of URLs or local paths to `.repo` files. Supports `%fedora` substitution. |
 | `gpg_keys` | List<String> | List of GPG keys to import. |
-| `nonfree` | String | Set to `"rpmfusion"` to quickly enable RPMFusion free/nonfree repos. |
 
 ### Cleanup Object (`cleanup`)
 

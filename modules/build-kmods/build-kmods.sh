@@ -93,18 +93,6 @@ setup_repos() {
         done
     fi
     
-    # 4. Handle RPMFusion shortcut
-    if echo "$CONFIG" | jq -e '.repos.nonfree' >/dev/null; then
-        local nonfree
-        nonfree=$(echo "$CONFIG" | jq -r '.repos.nonfree')
-        if [[ "$nonfree" == "rpmfusion" ]]; then
-             echo "Installing RPMFusion..."
-             local fedora_ver
-             fedora_ver=$(rpm -E %fedora)
-             dnf5 "${DNF_OPTS[@]}" install -y "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${fedora_ver}.noarch.rpm" \
-                             "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${fedora_ver}.noarch.rpm"
-        fi
-    fi
 }
 
 # Installs necessary build dependencies and kernel headers

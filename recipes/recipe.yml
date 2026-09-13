@@ -122,14 +122,10 @@ modules:
       files:
         - terra-source.repo
         - https://raw.githubusercontent.com/terrapkg/subatomic-repos/main/terra.repo
-      nonfree: rpmfusion
     kernel:
       package: kernel-cachyos
       devel: kernel-cachyos-devel-matched
     cleanup:
-      packages:
-        - rpmfusion-free-release
-        - rpmfusion-nonfree-release
       files:
         - /etc/yum.repos.d/terra.repo
         - /etc/yum.repos.d/terra-source.repo
