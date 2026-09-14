@@ -30,7 +30,6 @@ modules:
         - ilyaz/LACT
         - brycensranch/gpu-screen-recorder-git
         - jackgreiner/lsfg-vk-git
-        - codifryed/CoolerControl
         - hikariknight/looking-glass-kvmfr
         - bieszczaders/kernel-cachyos
         - bieszczaders/kernel-cachyos-addons
@@ -85,13 +84,16 @@ modules:
         - scx-tools
         # Gaming
         - antimicrox
-        - goverlay
         - inputplumber
         - lsfg-vk
         - lsfg-vk-ui
-        # Hardware
+        # Hardware & Sensors
         - coolercontrol
+        - i2c-tools
         - lact
+        - liquidctl
+        - liquidctl-udev
+        - lm_sensors
         - openrgb
         - steam-devices
         # Networking
@@ -148,6 +150,9 @@ modules:
         source:
           url: https://github.com/gnif/LookingGlass.git
         builddir: "module"
+      - name: nct6687d
+        source:
+          url: https://github.com/Fred78290/nct6687d.git
 
   - type: sbsign 
     source: local

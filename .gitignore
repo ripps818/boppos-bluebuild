@@ -4,3 +4,4 @@ cosign.private
 /.bluebuild-scripts_*
 /.oldscripts
 boppos.priv
+job-logs.txt
