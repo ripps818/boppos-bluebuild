@@ -9,24 +9,14 @@ modules:
       - source: system
         destination: /
 
-  - type: copy
-    src: boppos.priv
-    dest: /usr/share/boppos/keys/boppos.priv
-
   - type: script
     scripts:
-      - check-files.sh
-      - kernel-prebuild.sh
       - build-tuned.sh
-    snippets:
-      - ln -sf /bin/true /usr/bin/grub2-editenv
-      - ln -sf /bin/true /usr/bin/grub2-probe
-      - sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/*akmods*.repo || true
 
   # Bazzite 45+ ships the Terra repos but leaves them disabled; enable for our builds.
   - type: script
     snippets:
-      - dnf5 config-manager enable terra terra-extras
+      - dnf5 config-manager enable terra terra-extras terra-mesa
 
   - type: dnf
     repos:
@@ -35,8 +25,6 @@ modules:
         - ilyaz/LACT
         - brycensranch/gpu-screen-recorder-git
         - jackgreiner/lsfg-vk-git
-        - hikariknight/looking-glass-kvmfr
-        - bieszczaders/kernel-cachyos
         - bieszczaders/kernel-cachyos-addons
       files:
         - https://repository.mullvad.net/rpm/stable/mullvad.repo
@@ -49,13 +37,6 @@ modules:
         - tuned-ppd
         - hhd
         - hhd-ui
-        - kernel
-        - kernel-core
-        - kernel-modules
-        - kernel-modules-core
-        - kernel-modules-extra
-        - kernel-modules-akmods
-        - kernel-devel-matched
         - gamescope-session-plus
 
     install:
@@ -72,11 +53,6 @@ modules:
         - mesa-vulkan-drivers
         - mesa-libgbm
         - mesa-libglapi
-        # CachyOS Kernel
-        - kernel-cachyos
-        - kernel-cachyos-core
-        - kernel-cachyos-modules
-        - kernel-cachyos-devel-matched
         # CachyOS Addons
         - ananicy-cpp
         - cachyos-ananicy-rules
@@ -122,49 +98,9 @@ modules:
         - ugrep
         - zoxide
 
-  - type: build-kmods
-    source: local
-    repos:
-      files:
-        - terra-source.repo
-    kernel:
-      package: kernel-cachyos
-      devel: kernel-cachyos-devel-matched
-    cleanup:
-      files:
-        - /etc/yum.repos.d/terra-source.repo
-    build_deps:
-      - python3-setuptools
-      - dwarves
-    modules:
-      - name: xone
-        source:
-          package: dkms-xone
-        extras:
-          - xone
-          - xone-firmware
-      - name: xpad-noone
-        source:
-          package: dkms-xpad-noone
-        extras:
-          - xpad-noone
-      - name: kvmfr
-        source:
-          url: https://github.com/gnif/LookingGlass.git
-        builddir: "module"
-      - name: nct6687d
-        source:
-          url: https://github.com/Fred78290/nct6687d.git
-
   - type: script
     snippets:
-      - dnf5 config-manager disable terra terra-extras
-
-  - type: sbsign 
-    source: local
-    keys:
-      priv: /usr/share/boppos/keys/boppos.priv
-      pem: /usr/share/boppos/keys/boppos.pem
+      - dnf5 config-manager disable terra terra-extras terra-mesa
 
   - type: justfiles
     validate: true
@@ -176,7 +112,6 @@ modules:
     scripts:
       - fix-just-collision.sh
       - install-joystick-blacklist.sh
-      - kernel-postbuild.sh
       - install-warp-wgcf.sh
 
   - type: default-flatpaks
