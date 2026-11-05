@@ -13,6 +13,7 @@ curl -fsSL https://pkg.cloudflareclient.com/cloudflare-warp-ascii.repo -o /etc/y
 sed -i 's|/rpm/\$releasever|/rpm/44|' /etc/yum.repos.d/cloudflare-warp-ascii.repo
 
 dnf5 download -y cloudflare-warp --arch=x86_64
+rpm --import https://pkg.cloudflareclient.com/pubkey.gpg
 rpm -ivh --nodeps ./cloudflare-warp*.rpm
 
 echo "--- Installing wgcf (Native WireGuard alternative) ---"
