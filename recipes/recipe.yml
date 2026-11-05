@@ -1,7 +1,7 @@
 name: boppos-bluebuild
 description: "BoppOS based on Bazzite-dx, optimized for AMD Hardware"
 base-image: ghcr.io/ublue-os/bazzite-dx
-image-version: stable-44
+image-version: stable
 
 modules:
   - type: files
@@ -22,6 +22,11 @@ modules:
       - ln -sf /bin/true /usr/bin/grub2-editenv
       - ln -sf /bin/true /usr/bin/grub2-probe
       - sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/*akmods*.repo || true
+
+  # Bazzite 45+ ships the Terra repos but leaves them disabled; enable for our builds.
+  - type: script
+    snippets:
+      - dnf5 config-manager enable terra terra-extras
 
   - type: dnf
     repos:
@@ -122,13 +127,11 @@ modules:
     repos:
       files:
         - terra-source.repo
-        - https://raw.githubusercontent.com/terrapkg/subatomic-repos/main/terra.repo
     kernel:
       package: kernel-cachyos
       devel: kernel-cachyos-devel-matched
     cleanup:
       files:
-        - /etc/yum.repos.d/terra.repo
         - /etc/yum.repos.d/terra-source.repo
     build_deps:
       - python3-setuptools
@@ -152,6 +155,10 @@ modules:
       - name: nct6687d
         source:
           url: https://github.com/Fred78290/nct6687d.git
+
+  - type: script
+    snippets:
+      - dnf5 config-manager disable terra terra-extras
 
   - type: sbsign 
     source: local
