@@ -9,6 +9,8 @@ cd /tmp/warp
 
 # Add the repository explicitly since BlueBuild cleans up repos after the dnf module
 curl -fsSL https://pkg.cloudflareclient.com/cloudflare-warp-ascii.repo -o /etc/yum.repos.d/cloudflare-warp-ascii.repo
+# Cloudflare has no Fedora 45 repo (404); the RPM is installed with --nodeps anyway, so use the 44 one.
+sed -i 's|/rpm/\$releasever|/rpm/44|' /etc/yum.repos.d/cloudflare-warp-ascii.repo
 
 dnf5 download -y cloudflare-warp --arch=x86_64
 rpm -ivh --nodeps ./cloudflare-warp*.rpm
