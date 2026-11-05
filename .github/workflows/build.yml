@@ -33,18 +33,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Retrieve Signing Key
-        shell: bash
-        run: |
-          # Create the key file
-          echo "${{ secrets.SECURE_BOOT_KEY }}" > boppos.priv
-          
-          # 🛑 CRITICAL FIX: Tell Docker NOT to ignore this file
-          echo "!boppos.priv" >> .dockerignore
-          
-          # (Optional) Verify it exists for the runner (Debug)
-          ls -l boppos.priv
-          
       - name: Build Custom Image
         uses: blue-build/github-action@v1.12
         with:

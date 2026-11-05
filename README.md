@@ -2,20 +2,20 @@
 
 ## How BoppOS differs from Bazzite
 
-While this image is based on Bazzite-dx, it uses the **CachyOS kernel** and a specific set of kernel arguments to prioritize gaming latency and hardware control for AMD users:
+While this image is based on Bazzite-dx, it uses Bazzite's own kernel (ogc) and a specific set of kernel arguments to prioritize gaming latency and hardware control for AMD users:
 
 * **Kernel Preemption:** Set to `full`. This makes the system more responsive during heavy CPU load, prioritizing game frames over background tasks.
 * **Memory Management:** Uses `transparent_hugepage=madvise`. This gives a performance boost to games and apps that support huge pages without the high RAM overhead of the `always` setting.
 * **AMD Optimizations:** Includes `iommu=pt` for better DMA performance and `amdgpu.ppfeaturemask=0xffffffff` so you can undervolt or overclock your GPU using tools like LACT.
 * **Compatibility:** Disables `split_lock_detect` to prevent performance drops in older game engines that can trigger kernel-level slowdowns.
-* **Extra Drivers:** Includes `xone` and `xpad-noone` for Xbox controller support, and the `KVMFR` module for Looking Glass users.
+* **Extra Drivers:** `xone`, `KVMFR` and `nct6687d` come from Bazzite's kernel modules.
 
 ### Secure Boot
 
-Since this uses the CachyOS kernel, I’ve included a custom signing system so that **Secure Boot** remains functional even with these custom modules. The kernel and modules are signed with a private key; you can enroll the keys using:
+The kernel and kernel modules are Bazzite's, signed with the Universal Blue key. Enroll it with Bazzite's own command:
 
 ```bash
-ujust enroll-secure-boot-keys
+ujust enroll-secure-boot-key
 ```
 
 ### Optional Virtualization Extras
