@@ -1,7 +1,7 @@
 name: boppos-bluebuild
 description: "BoppOS based on Bazzite-dx, optimized for AMD Hardware"
 base-image: ghcr.io/ublue-os/bazzite-dx
-image-version: stable
+image-version: stable-44
 
 modules:
   - type: files
