@@ -38,6 +38,8 @@ modules:
         - hhd
         - hhd-ui
         - gamescope-session-plus
+        # cachyos-settings ships the same oomd slice drop-ins and conflicts with it
+        - systemd-oomd-defaults
 
     install:
       skip-unavailable: true
