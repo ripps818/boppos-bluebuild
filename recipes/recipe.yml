@@ -173,7 +173,6 @@ modules:
         - Monoid
         - JetBrainsMono
         - DejaVuSansMono
-        - NerdFontsSymbolsOnly
       google-fonts:
         - Alegreya
         - Cabin
